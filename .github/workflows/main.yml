@@ -26,9 +26,14 @@ jobs:
       - name: analyze
         working-directory: scripts
         env:
-          TG_API_ID:   ${{ secrets.TG_API_ID }}
-          TG_API_HASH: ${{ secrets.TG_API_HASH }}
-          TG_SESSION:  ${{ secrets.TG_SESSION }}
+          TG_API_ID:    ${{ secrets.TG_API_ID }}
+          TG_API_HASH:  ${{ secrets.TG_API_HASH }}
+          TG_SESSION:   ${{ secrets.TG_SESSION }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID:   ${{ secrets.TG_CHAT_ID }}
+          AI_PROVIDER:  ${{ secrets.AI_PROVIDER }}
+          AI_API_KEY:   ${{ secrets.AI_API_KEY }}
+          AI_MODEL:     ${{ secrets.AI_MODEL }}
         run: |
           python run_daily.py ${{ secrets.TG_SESSION && '--with-telegram-personal' || '' }}
           python site_gen.py
