@@ -1,0 +1,50 @@
+name: daily-football
+on:
+  schedule:
+    - cron: "30 5 * * *"     # هر روز ۰۹:۰۰ تهران
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: دانلود کد سیستم
+        run: |
+          curl -sL "https://pub.hyperagent.com/api/published/pbf01KY9JKZHR_JES9DXGSNPKQ01MC/football-predictor-github.zip" -o code.zip
+          unzip -o code.zip -d _code
+          cp -r _code/scripts .
+          cp _code/requirements.txt .
+          mkdir -p docs
+      - name: نصب کتابخانه‌ها
+        run: pip install -r requirements.txt
+      - name: اجرای تحلیل و ساخت گزارش
+        working-directory: scripts
+        env:
+          TG_API_ID:   ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_SESSION:  ${{ secrets.TG_SESSION }}
+        run: |
+          python run_daily.py ${{ secrets.TG_SESSION && '--with-telegram-personal' || '' }}
+          python site_gen.py
+      - name: ارسال به تلگرام و جیمیل
+        working-directory: scripts
+        env:
+          TG_BOT_TOKEN:       ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID:         ${{ secrets.TG_CHAT_ID }}
+          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_TO:           ${{ secrets.GMAIL_TO }}
+        run: python deliver.py all || echo "delivery skipped"
+      - name: انتشار سایت
+        run: |
+          git config user.name football-bot
+          git config user.email bot@users.noreply.github.com
+          git add -f docs/ || true
+          git commit -m "report $(date -u +%F)" || echo "no change"
+          git push || echo "push skipped"
