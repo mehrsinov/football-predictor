@@ -87,6 +87,10 @@ def run(days_ahead=2):
     ref = pd.Timestamp.now(tz="Asia/Tehran").tz_localize(None).normalize()
     hist = load_history()
     fx = load_all_fixtures(days_ahead=days_ahead)
+    if "src" in fx.columns and len(fx):
+        from collections import Counter
+        by_src = dict(Counter(fx["src"].fillna("football-data")))
+        sys.stderr.write(f"fixtures in window: {len(fx)} — by src: {by_src}\n")
     if fx.empty:
         print("no fixtures in window")
         _save_predictions([], blend_weight())

@@ -1,114 +1,76 @@
 # -*- coding: utf-8 -*-
-"""Build the unified fixture list: football-data.co.uk (odds) + FotMob (coverage).
+"""Unified fixture list: football-data.co.uk (odds base) + global live coverage.
 
-football-data fixtures carry market odds but cover ~13 leagues. FotMob covers
-40+ leagues but no odds. We take football-data as the odds-bearing base, then
-append FotMob-only matches (fuzzy-deduped) so the model can still predict them
-(odds-free -> model-only probabilities, no de-vig).
+football-data fixtures carry market odds but cover ~13 leagues. The live layer
+(scripts/live_fixtures.py) adds worldwide coverage from a strict-priority
+waterfall of sources (Sports Mole -> AiScore -> Sofascore -> ESPN -> 365scores
+-> Livescore -> Flashscore -> FotMob -> prexzy). Live matches carry no odds, so
+we take football-data as the odds-bearing base and append live-only matches
+(fuzzy-deduped) — the model still prices them (model-only probs, no de-vig).
+
+The live layer also writes the comprehensive worldwide list to
+output/all_fixtures.json (+ .md) as a side effect of load_live_fixtures().
 """
 import os
+import sys
 
 import pandas as pd
-from curl_cffi import requests as cr
 
 from data_loader import load_fixtures
 from merge_rank import team_sim
 
-# (FotMob country code, keyword in league name) -> our history league name.
-# Keyed this way because FotMob names collide ("Serie A" = Brazil AND Italy)
-# and vary ("Liga Profesional Clausura"). We only map leagues our model covers.
-FOTMOB_MAP = [
-    ("BRA", "Serie A", "Brazil Serie A"),
-    ("ARG", "Liga Profesional", "Argentina Liga Profesional"),
-    ("SWE", "Allsvenskan", "Sweden Allsvenskan"),
-    ("NOR", "Eliteserien", "Norway Eliteserien"),
-    ("FIN", "Veikkausliiga", "Finland Veikkausliiga"),
-    ("DEN", "Superligaen", "Denmark Superliga"),
-    ("USA", "MLS", "USA MLS"),
-    ("MEX", "Liga MX", "Mexico Liga MX"),
-    ("JPN", "J1", "Japan J1 League"),
-    ("CHN", "Super League", "China Super League"),
-    ("POL", "Ekstraklasa", "Poland Ekstraklasa"),
-    ("ROU", "Superliga", "Romania Superliga"),
-    ("RUS", "Premier League", "Russia Premier League"),
-    ("ENG", "Premier League", "England Premier League"),
-    ("ESP", "LaLiga", "Spain La Liga"),
-    ("GER", "Bundesliga", "Germany Bundesliga"),
-    ("ITA", "Serie A", "Italy Serie A"),
-    ("FRA", "Ligue 1", "France Ligue 1"),
-    ("NED", "Eredivisie", "Netherlands Eredivisie"),
-    ("SCO", "Premiership", "Scotland Premiership"),
-    ("TUR", "Süper Lig", "Turkey Super Lig"),
-    ("GRE", "Super League", "Greece Super League"),
-    ("POR", "Liga Portugal", "Portugal Liga"),
-    ("BEL", "Pro League", "Belgium Pro League"),
-]
-_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-            "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Referer": "https://www.fotmob.com/"}
+try:
+    from live_fixtures import load_live_fixtures
+except Exception as _ex:  # never let a live-layer import error kill predictions
+    def load_live_fixtures(days_ahead=2):
+        sys.stderr.write(f"[fixtures_merge] live layer unavailable: {_ex}\n")
+        return []
 
-
-def _map_league(ccode, name):
-    for c, kw, out in FOTMOB_MAP:
-        if ccode == c and kw.lower() in (name or "").lower():
-            return out
-    return None
+_COLS = ["league", "date", "time", "home", "away", "odds_h", "odds_d", "odds_a",
+         "max_h", "max_d", "max_a", "odds_over25", "odds_under25"]
 
 
 def _same_match(ah, aa, bh, ba):
     return min(team_sim(ah, bh), team_sim(aa, ba)) >= 80
 
 
-def _fotmob_day(day):
-    """Return list of dicts for one date, with our league names, exclude finished."""
-    url = f"https://www.fotmob.com/api/data/matches?date={day.strftime('%Y%m%d')}"
-    out = []
-    try:
-        r = cr.get(url, headers=_HEADERS, timeout=20, impersonate="chrome110")
-        if r.status_code != 200:
-            return out
-        data = r.json()
-    except Exception:
-        return out
-    for lb in data.get("leagues", []):
-        league = _map_league(lb.get("ccode"), lb.get("name"))
-        if not league:
-            continue
-        for m in lb.get("matches", []):
-            st = m.get("status", {})
-            if st.get("finished") or st.get("started"):
-                continue
-            t = st.get("utcTime", "")
-            out.append({"league": league, "date": pd.Timestamp(day),
-                        "time": t[11:16] if len(t) >= 16 else "",
-                        "home": m["home"]["name"], "away": m["away"]["name"],
-                        "odds_h": None, "odds_d": None, "odds_a": None,
-                        "max_h": None, "max_d": None, "max_a": None,
-                        "odds_over25": None, "odds_under25": None, "src": "fotmob"})
-    return out
-
-
 def load_all_fixtures(days_ahead=2):
     ref = pd.Timestamp.now(tz="Asia/Tehran").tz_localize(None).normalize()
+
     base = load_fixtures()
+    if base is None or base.empty:
+        base = pd.DataFrame(columns=_COLS)
     base = base[(base["date"] >= ref) & (base["date"] < ref + pd.Timedelta(days=days_ahead))].copy()
     base["src"] = "football-data"
+    base = base.reset_index(drop=True)
 
-    rows = []
-    for d_off in range(days_ahead):
-        rows.extend(_fotmob_day((ref + pd.Timedelta(days=d_off)).date()))
-    fot = pd.DataFrame(rows)
-    if fot.empty:
-        return base.reset_index(drop=True)
+    try:
+        live_rows = load_live_fixtures(days_ahead=days_ahead) or []
+    except Exception as ex:
+        sys.stderr.write(f"[fixtures_merge] live layer error: {type(ex).__name__}: {ex}\n")
+        live_rows = []
+    live = pd.DataFrame(live_rows)
 
-    extra = []
-    for _, f in fot.iterrows():
-        dup = base[(base["league"] == f["league"]) & (base["date"] == f["date"])]
-        if any(_same_match(f["home"], f["away"], b.home, b.away) for b in dup.itertuples()):
-            continue
-        extra.append(f)
-    if extra:
-        base = pd.concat([base, pd.DataFrame(extra)], ignore_index=True)
+    if not live.empty:
+        extra = []
+        for _, f in live.iterrows():
+            dup = base[(base["league"] == f["league"]) & (base["date"] == f["date"])]
+            matched = False
+            for b in dup.itertuples():
+                if _same_match(f["home"], f["away"], b.home, b.away):
+                    matched = True
+                    # The football-data row keeps its odds; just backfill a
+                    # kickoff time onto it if the odds file didn't carry one.
+                    if not str(getattr(b, "time", "") or "").strip() and str(f.get("time") or "").strip():
+                        base.loc[b.Index, "time"] = f["time"]
+                    break
+            if not matched:
+                extra.append(f)
+        if extra:
+            base = pd.concat([base, pd.DataFrame(extra)], ignore_index=True)
+
+    if "time" in base.columns:
+        base["time"] = base["time"].fillna("")  # avoid float-NaN vs str sort error
     return base.sort_values(["date", "time"]).reset_index(drop=True)
 
 
