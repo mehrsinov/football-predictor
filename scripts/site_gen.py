@@ -9,6 +9,8 @@ works on GitHub Pages, locally, and as a platform artifact with zero servers.
 """
 import json
 import os
+import sys
+import traceback
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "output")
@@ -17,13 +19,46 @@ DOCS = os.path.join(HERE, "..", "docs")
 
 def build():
     data_path = os.path.join(OUT, "webapp_data.json")
+    # فعلاً برای دیباگ، fallback به فایل قدیمی به‌طور پیش‌فرض خاموش است تا هر
+    # خطایی در webapp_data.build() بلافاصله با traceback کامل دیده شود و برنامه
+    # متوقف شود (باگ «گیر کردن روی دیتای قدیمی»). برای برگرداندن رفتار امنِ
+    # production کافی است متغیر محیطی WEBAPP_ALLOW_STALE=1 تنظیم شود.
+    allow_stale = os.environ.get("WEBAPP_ALLOW_STALE", "0") == "1"
     try:  # always rebuild with today's fresh pipeline outputs
         import webapp_data
         webapp_data.build()
     except Exception as ex:
-        if not os.path.exists(data_path):
+        # خطای کامل و با جزئیات را روی stderr چاپ کن تا دقیقاً معلوم شود کدام
+        # بخش از webapp_data.py شکست خورده (مثلاً ImportError مربوط به jdatetime).
+        print(
+            "\n" + "=" * 72 +
+            "\n[site_gen] webapp_data.build() FAILED — دیتای داشبورد ساخته نشد."
+            f"\n[site_gen] نوع خطا: {type(ex).__name__}: {ex}"
+            "\n" + "=" * 72,
+            file=sys.stderr,
+        )
+        traceback.print_exc()
+        sys.stderr.flush()
+
+        if not allow_stale:
+            # حالت دیباگ: خطای اصلی را بالا بده تا پایپ‌لاین با علت واقعی
+            # (نه یک fallback خاموش) متوقف شود.
             raise
-        print(f"webapp_data rebuild failed ({ex}); using existing file")
+        if not os.path.exists(data_path):
+            # حتی در حالت stale هم اگر فایل قدیمی وجود ندارد، چاره‌ای جز
+            # شکست نیست.
+            print(
+                "[site_gen] WEBAPP_ALLOW_STALE=1 اما هیچ فایل قدیمی "
+                f"({data_path}) وجود ندارد؛ ادامه ممکن نیست.",
+                file=sys.stderr,
+            )
+            raise
+        print(
+            "\n[site_gen] هشدار جدی: WEBAPP_ALLOW_STALE=1 فعال است — از دیتای "
+            f"قدیمی {data_path} استفاده می‌شود و تاریخ داشبورد به‌روزرسانی "
+            "نخواهد شد!\n",
+            file=sys.stderr,
+        )
     with open(data_path, encoding="utf-8") as f:
         data_json = f.read()
 
