@@ -266,7 +266,15 @@ def step(name, script, args=None, timeout=None):
         else:
             log.error("[FAIL] %s (%.0fs) — returncode %d", name, elapsed, r.returncode)
             log.error("stdout: %s", r.stdout.strip()[:400])
-            log.error("stderr: %s", r.stderr.strip()[:600])
+            # هم ابتدا و هم انتهای stderr را لاگ می‌کنیم: اسکریپت‌هایی مثل
+            # predict_today ده‌ها خط پیشرفت به stderr می‌ریزند و traceback واقعی
+            # در انتهاست؛ اگر فقط ابتدا را لاگ کنیم علت خرابی هرگز دیده نمی‌شود.
+            err = r.stderr.strip()
+            if len(err) <= 1500:
+                log.error("stderr: %s", err)
+            else:
+                log.error("stderr[head]: %s", err[:400])
+                log.error("stderr[tail]: %s", err[-1100:])
         return r.returncode == 0
     except subprocess.TimeoutExpired:
         log.error("[TIMEOUT] %s (>%ds) — skipped, continuing", name, timeout)
