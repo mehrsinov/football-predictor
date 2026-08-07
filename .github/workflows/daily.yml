@@ -79,5 +79,7 @@ jobs:
           retention-days: 14
 
       - name: بیدار نگه‌داشتن ربات (اختیاری — HuggingFace Space)
-        if: ${{ secrets.HF_SPACE_URL != '' }}
-        run: curl -s -m 30 "${{ secrets.HF_SPACE_URL }}" > /dev/null || echo "ping skipped"
+        env:
+          HF_SPACE_URL: ${{ secrets.HF_SPACE_URL }}
+        if: ${{ env.HF_SPACE_URL != '' }}
+        run: curl -s -m 30 "$HF_SPACE_URL" > /dev/null || echo "ping skipped"
