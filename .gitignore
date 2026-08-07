@@ -1,0 +1,21 @@
+# داده‌های خام و پردازش‌شده (در اجرای Actions دوباره ساخته می‌شوند)
+data/raw/*.csv
+data/processed/*.csv
+
+# سشن و اعتبارنامه‌های تلگرام — هرگز کامیت نشوند!
+scripts/tg.session
+scripts/*.session
+output/tg_session_string.txt
+output/tg_login_state.json
+
+# خروجی‌های میانی (فقط report_fa.md و docs/ کامیت می‌شوند)
+output/tips_*.json
+output/model_predictions.json
+output/ranked_options.json
+output/injuries.json
+output/backtest_matches.csv
+
+# محیط پایتون
+__pycache__/
+*.pyc
+.venv/

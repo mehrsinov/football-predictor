@@ -1,0 +1,83 @@
+name: گزارش روزانه فوتبال
+
+# اجرای خودکار هر روز ساعت ۰۹:۰۰ به‌وقت تهران (۰۵:۳۰ UTC) + امکان اجرای دستی
+on:
+  schedule:
+    - cron: "30 5 * * *"
+  workflow_dispatch: {}   # دکمه Run workflow برای اجرای دستی
+
+# اجازه‌ی نوشتن روی مخزن (برای کامیت سایت در پوشه docs)
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-football
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # مجموع timeoutهای مرحله‌ها در حالت بدترین حالت (retry/backoff شبکه) بیش از ۳۰
+    # دقیقه است؛ ۴۵ دقیقه اجازه می‌دهد پایپ‌لاین حتی در شبکه‌ی کند تمام شود.
+    timeout-minutes: 45
+    steps:
+      - name: دریافت کد مخزن
+        uses: actions/checkout@v4
+
+      - name: نصب پایتون
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: نصب کتابخانه‌ها
+        run: pip install -r requirements.txt
+
+      - name: اجرای پایپ‌لاین کامل تحلیل
+        working-directory: scripts
+        env:
+          # اعتبارنامه‌ها از GitHub Secrets خوانده می‌شوند (هرگز داخل کد نیست)
+          TG_API_ID:        ${{ secrets.TG_API_ID }}
+          TG_API_HASH:      ${{ secrets.TG_API_HASH }}
+          TG_SESSION:       ${{ secrets.TG_SESSION }}
+          # لایه هوش مصنوعی افزودنی (اختیاری): هر AI با API سازگار
+          AI_PROVIDER:      ${{ secrets.AI_PROVIDER }}
+          AI_API_KEY:       ${{ secrets.AI_API_KEY }}
+          AI_MODEL:         ${{ secrets.AI_MODEL }}
+        run: |
+          python run_daily.py ${{ secrets.TG_SESSION && '--with-telegram-personal' || '' }}
+
+      - name: ساخت سایت فارسی
+        working-directory: scripts
+        run: python site_gen.py
+
+      - name: ارسال گزارش به تلگرام و جیمیل
+        working-directory: scripts
+        env:
+          TG_BOT_TOKEN:        ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID:          ${{ secrets.TG_CHAT_ID }}
+          GMAIL_USER:          ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_TO:            ${{ secrets.GMAIL_TO }}
+        run: python deliver.py all || echo "delivery skipped or partial"
+
+      - name: انتشار سایت (کامیت پوشه docs)
+        run: |
+          git config user.name  "football-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add docs/ output/report_fa.md || true
+          git commit -m "گزارش روزانه $(date -u +%Y-%m-%d)" || echo "بدون تغییر"
+          git push || echo "push skipped"
+
+      # بارگذاری لاگ‌ها برای مشاهده دقیق علت خرابی در صورت بروز خطا
+      - name: آپلود لاگ‌های پایپ‌لاین
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-logs
+          path: logs/run_daily.log
+          retention-days: 14
+
+      - name: بیدار نگه‌داشتن ربات (اختیاری — HuggingFace Space)
+        if: ${{ secrets.HF_SPACE_URL != '' }}
+        run: curl -s -m 30 "${{ secrets.HF_SPACE_URL }}" > /dev/null || echo "ping skipped"
