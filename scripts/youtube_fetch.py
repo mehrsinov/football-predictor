@@ -19,7 +19,7 @@ list and the pipeline continues untouched.
 Keys (one Google API key with BOTH APIs enabled satisfies both lookups):
     YouTube Data : YT_API_KEY | YT_DATA_API_KEY | GOOGLE_API_KEY | GEMINI_API_KEY
     Gemini       : GEMINI_API_KEY | GOOGLE_API_KEY | YT_API_KEY | AI_API_KEY
-    Model        : YT_MODEL                              (default gemini-2.5-flash)
+    Model        : YT_MODEL                              (default gemini-2.0-flash)
 
 Caps (all env-tunable; keep modest to control API spend):
     mostPopular : YT_REGIONS(CSV) YT_MAX_REGIONS(6) YT_POP_PER_REGION(3)
@@ -47,7 +47,7 @@ KEY = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
        or os.environ.get("YT_API_KEY") or os.environ.get("AI_API_KEY") or "").strip()
 DATA_KEY = (os.environ.get("YT_API_KEY") or os.environ.get("YT_DATA_API_KEY")
             or os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY") or "").strip()
-MODEL = (os.environ.get("YT_MODEL") or "gemini-2.5-flash").strip()
+MODEL = (os.environ.get("YT_MODEL") or "gemini-2.0-flash").strip()
 
 # curated-channel caps (optional path)
 SINCE_HOURS = int(os.environ.get("YT_SINCE_HOURS", "30") or 30)

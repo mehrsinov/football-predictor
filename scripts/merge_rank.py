@@ -73,17 +73,40 @@ PICK_MAP = {
     "over": ("OU25", "Over"), "under": ("OU25", "Under"),
     "yes": ("BTTS", "Yes"), "no": ("BTTS", "No"), "gg": ("BTTS", "Yes"), "ng": ("BTTS", "No"),
 }
+# Extended markets we recognize but do NOT model. They must pass through intact
+# (never be re-mapped onto a core market by PICK_MAP) so they surface in the
+# merged tips for the assistant/raw layers without a fabricated probability.
+_EXT_PREFIXES = ("CORN", "CARD", "OFF", "SHOT", "PLAYER", "HT_", "OU_", "TEAM")
+_EXT_EXACT = {"DNB", "EH", "HTFT", "COMBO"}
 
 
 def canon_tip(tip):
     market = str(tip.get("market") or "").upper().replace("O/U", "OU").replace(".", "")
     pick = str(tip.get("pick") or "").strip()
+
+    # 1) Recognized-but-unmodelled extended markets → pass through (need a pick).
+    if market in _EXT_EXACT or market.startswith(_EXT_PREFIXES):
+        return None if not pick else {**tip, "market": market, "pick": pick[:60]}
+
+    # 2) Any Over/Under total (incl. lines we don't model, e.g. OU05/OU45) → keep
+    #    the exact market code; only the modelled lines (OU15/25/35) get scored.
+    if re.fullmatch(r"OU\d{2}", market):
+        pick = pick.capitalize()
+        if pick not in {"Over", "Under"}:
+            return None
+        return {**tip, "market": market, "pick": pick}
+
+    # 3) Core markets, or infer a core market from an unambiguous pick token.
     if market not in MARKET_KEYS:
         mp = PICK_MAP.get(pick.lower())
         if mp:
             market, pick = mp
         elif re.fullmatch(r"\d+\s*-\s*\d+", pick):
             market = "CS"
+        elif market and pick:
+            # A specific custom market we don't recognize — keep it, unranked,
+            # rather than dropping the user's tip on the floor.
+            return {**tip, "market": market, "pick": pick[:60]}
         else:
             return None
     if market == "1X2":

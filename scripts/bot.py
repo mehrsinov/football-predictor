@@ -317,7 +317,7 @@ def view_match_analysis(cid, home, away, min_odds=1.0, value_only=False, mid=Non
 def check_slip(cid, text=None, photo_id=None):
     """Read a bet slip (text and/or photo, any language) and analyze it.
 
-    Uses tg_bot_inbox.read_slip: Gemini multimodal first, OpenAI Vision fallback,
+    Uses tg_bot_inbox.read_slip: Gemini multimodal first, Groq Vision fallback,
     then rigorous validation (both teams, valid market/pick, sane decimal odds).
     Falls back to a regex parser for structured text when no AI key is set."""
     from tg_tip_extract import extract_tips
@@ -328,7 +328,7 @@ def check_slip(cid, text=None, photo_id=None):
     photo_failed = bool(photo_id) and img is None
     images = [("image/jpeg", img)] if img else []
 
-    # 1) AI reader — Gemini → OpenAI fallback, with validation/sanity checks
+    # 1) AI reader — Gemini → Groq fallback, with validation/sanity checks
     tips, rejects, meta = read_slip(text or "", images)
 
     # 2) regex fallback for structured text when the AI layer found nothing usable
@@ -342,7 +342,7 @@ def check_slip(cid, text=None, photo_id=None):
     if not tips:
         if meta.get("reader") is None and (img or text):
             return send(cid, "📸 برای خواندن تصویر/متن نیاز به کلید AI هست "
-                             "(GEMINI_API_KEY یا OPENAI_API_KEY).",
+                             "(GEMINI_API_KEY یا GROQ_API_KEY).",
                         kb=[[btn("🏠 منو", "menu")]])
         # surface the most specific validation reason we have
         reason = rejects[0][1] if rejects else "دو تیم + انتخاب لازم است"

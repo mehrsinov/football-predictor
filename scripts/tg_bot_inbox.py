@@ -44,23 +44,35 @@ EXTRACT_PROMPT = """این پیام را یک کاربر برای دستیار �
 فقط و فقط تیپ‌های فوتبالی را که در متن یا تصویر **به‌صراحت** آمده استخراج کن — چیزی از خودت نساز.
 
 خروجی را **دقیقاً** یک آرایهٔ JSON بده (بدون متن اضافه)، هر عضو:
-{"home":"نام لاتین تیم میزبان","away":"نام لاتین تیم مهمان","league":"نام لیگ به انگلیسی در صورت ذکر","market":"1X2|DC|OU15|OU25|OU35|BTTS|CS|AH","pick":"انتخاب","prob":عدد۰تا۱یاnull,"odds":عددیاnull,"note":"خلاصهٔ یک‌جمله‌ای فارسی از دلیل"}
+{"home":"نام لاتین تیم میزبان","away":"نام لاتین تیم مهمان","league":"نام لیگ به انگلیسی در صورت ذکر","market":"کد بازار","pick":"انتخاب","line":"خط در صورت وجود مثل 2.5 یا -1 یا null","prob":عدد۰تا۱یاnull,"odds":عددیاnull,"note":"خلاصهٔ یک‌جمله‌ای فارسی از دلیل"}
 
-قواعد pick بر حسب market:
- - 1X2 → "1" (برد میزبان) / "X" (مساوی) / "2" (برد مهمان)
- - DC  → "1X" یا "X2" یا "12"   |   OU25/OU15/OU35 → "Over" یا "Under"
- - BTTS → "Yes" یا "No"          |   CS → نتیجهٔ دقیق مثل "2-1"
-نام تیم‌ها را حتماً لاتین و کامل بنویس (پرسپولیس→Persepolis، رئال→Real Madrid).
-«برد میزبان»=1؛ «بالای ۲.۵»=OU25/Over؛ «هر دو تیم گل»=BTTS/Yes؛ «شانس دوبل»=DC.
-اگر ضریب دیده نشد odds=null. اگر هیچ تیپ صریحی نبود، آرایهٔ خالی [] بده."""
+market می‌تواند هر بازار شرط‌بندی معتبر باشد. از این کدها استفاده کن (و اگر بازار دیگری بود، نزدیک‌ترین کد یا یک کد کوتاهِ لاتینِ گویا بساز):
+ - نتیجه:      1X2 (پیک: 1/X/2)   |   DC دبل‌شانس (1X/X2/12)   |   DNB بدون‌تساوی (1/2)
+ - گل کل/تیم:  OU زیر/بالای گل با خط (پیک: Over/Under، مثال market=OU line=2.5) | OU_HOME | OU_AWAY
+ - هر دو گل:   BTTS (Yes/No)
+ - نتیجه دقیق: CS (پیک مثل "2-1")   |   HTFT نیمه/پایان (پیک مثل "1/1","X/2")
+ - هندیکاپ:    AH هندیکاپ آسیایی (پیک: Home/Away با line مثل -1، -0.5، +1) | EH هندیکاپ اروپایی
+ - کرنر:       CORN_OU کرنر زیر/بالا (Over/Under + line) | CORN_1X2 | CORN_TEAM
+ - کارت:       CARD_OU کارت زیر/بالا (Over/Under + line) | CARD_TEAM
+ - آفساید/شوت: OFF_OU | SHOT_OU (Over/Under + line)
+ - نیمه اول:   HT_1X2 | HT_OU | HT_BTTS  (همان قواعد ولی مربوط به نیمهٔ اول)
+ - بازیکن:     PLAYER_GOAL گلزن (pick=نام بازیکن) | PLAYER_ASSIST | PLAYER_CARD | PLAYER_SHOTS (+line)
+ - ترکیبی:     COMBO برای شرط‌های ترکیبی/بت‌بیلدر (pick=توضیح کوتاه لاتین از کل ترکیب)
+
+قواعد کلی:
+ - نام تیم‌ها را حتماً لاتین و کامل بنویس (پرسپولیس→Persepolis، رئال→Real Madrid).
+ - «برد میزبان»=1X2/1؛ «بالای ۲.۵»=OU/Over/line=2.5؛ «هر دو تیم گل»=BTTS/Yes؛ «شانس دوبل»=DC؛ «گلزن اول/هرزمان»=PLAYER_GOAL.
+ - خط شرط (Over/Under/handicap) را در فیلد line بگذار؛ اگر خط جزئی از pick بود آن را هم در line تکرار کن.
+ - اگر ضریب دیده نشد odds=null. اگر بازار را نفهمیدی ولی انتخاب روشن بود، market را با یک کد لاتینِ کوتاه توصیف کن و انتخاب را کامل در pick بنویس.
+ - اگر هیچ تیپ صریحی نبود، آرایهٔ خالی [] بده."""
 
 # Legacy pluggable-vision prompt (fallback path, image-only, non-Gemini keys).
 VISION_PROMPT = """این تصویر یک کوپن/اسلیپ شرط‌بندی فوتبال یا پست پیش‌بینی است (احتمالاً فارسی).
-همه تیپ‌های قابل تشخیص را استخراج کن و فقط JSON آرایه‌ای برگردان:
-[{"home":"نام لاتین تیم میزبان","away":"نام لاتین تیم مهمان","market":"1X2|DC|OU15|OU25|OU35|BTTS|CS|AH","pick":"1|X|2|1X|X2|12|Over|Under|Yes|No|2-1","odds":1.85}]
+همه تیپ‌های قابل تشخیص را استخراج کن و فقط JSON آرایه‌ای برگردان — هر نوع بازاری (نتیجه، گل، هندیکاپ آسیایی/اروپایی، هر دو گل، نتیجه دقیق، دبل‌شانس، کرنر، کارت، نیمه‌اول/پایان، پراپ بازیکن، ترکیبی):
+[{"home":"نام لاتین میزبان","away":"نام لاتین مهمان","market":"کد بازار (مثل 1X2/DC/DNB/OU/BTTS/CS/HTFT/AH/EH/CORN_OU/CARD_OU/HT_1X2/PLAYER_GOAL/COMBO)","pick":"انتخاب کامل","line":"خط مثل 2.5/-1 یا null","odds":1.85}]
 قوانین: نام تیم‌ها را به املای لاتین رایج بنویس (پرسپولیس→Persepolis، رئال→Real Madrid).
-«برد میزبان»=pick 1؛ «بالای ۲.۵»=OU25/Over؛ «هر دو تیم گل»=BTTS/Yes؛ «شانس دوبل»=DC.
-اگر ضریب دیده نمی‌شود odds را null بگذار. اگر هیچ تیپی قابل تشخیص نیست: []"""
+«برد میزبان»=1X2/1؛ «بالای ۲.۵»=OU/Over/line=2.5؛ «هر دو تیم گل»=BTTS/Yes؛ «شانس دوبل»=DC؛ هندیکاپ→AH با line.
+اگر بازار غیرمتعارف بود، یک کد لاتینِ کوتاهِ گویا بساز و انتخاب را کامل در pick بنویس. اگر ضریب نبود odds=null. اگر هیچ تیپی نبود: []"""
 
 
 def _gemini_key():
@@ -98,7 +110,7 @@ def _gemini_extract(text, images):
     if not key:
         return None
     model = (os.environ.get("YT_MODEL") or os.environ.get("AI_MODEL")
-             or "gemini-2.5-flash").strip()
+             or "gemini-2.0-flash").strip()
     parts = [{"text": EXTRACT_PROMPT}]
     if text:
         parts.append({"text": "متن پیام:\n" + text[:4000]})
@@ -131,7 +143,7 @@ def _vision_extract(img_b64):
     provider = os.environ.get("AI_PROVIDER", "openai").strip().lower()
     vmodel = os.environ.get("AI_VISION_MODEL", "").strip() or {
         "openrouter": "nvidia/nemotron-nano-12b-v2-vl:free",
-        "gemini": os.environ.get("AI_MODEL", "gemini-2.5-flash") or "gemini-2.5-flash",
+        "gemini": os.environ.get("AI_MODEL", "gemini-2.0-flash") or "gemini-2.0-flash",
         "openai": "gpt-4o-mini",
     }.get(provider, "gpt-4o-mini")
     try:
@@ -163,16 +175,18 @@ def _vision_extract(img_b64):
         return []
 
 
-def _openai_vision_extract(text, images):
-    """OpenAI vision reader — the fallback when Gemini fails / is incomplete.
+def _groq_vision_extract(text, images):
+    """Groq vision reader — the fallback when Gemini fails / is incomplete.
 
-    Keyed explicitly on OPENAI_API_KEY (independent of the AI_PROVIDER-based
-    _vision_extract). images: list of (mime_type, raw_bytes). Returns a list of
-    raw tip dicts, or None when OPENAI_API_KEY is not set."""
-    key = os.environ.get("OPENAI_API_KEY", "").strip()
+    Keyed on GROQ_API_KEY. Groq exposes an OpenAI-compatible endpoint, so we POST
+    text + image data-URIs as a single user turn. images: list of
+    (mime_type, raw_bytes). Returns a list of raw tip dicts, or None when
+    GROQ_API_KEY is not set (caller then has no fallback left)."""
+    key = os.environ.get("GROQ_API_KEY", "").strip()
     if not key:
         return None
-    model = os.environ.get("OPENAI_VISION_MODEL", "").strip() or "gpt-4o-mini"
+    model = (os.environ.get("GROQ_VISION_MODEL", "").strip()
+             or "llama-3.2-11b-vision-preview")
     content = [{"type": "text", "text": EXTRACT_PROMPT}]
     if text:
         content.append({"type": "text", "text": "متن پیام:\n" + text[:4000]})
@@ -181,15 +195,15 @@ def _openai_vision_extract(text, images):
         content.append({"type": "image_url",
                         "image_url": {"url": f"data:{mime};base64,{b64}"}})
     try:
-        r = requests.post("https://api.openai.com/v1/chat/completions", timeout=90,
+        r = requests.post("https://api.groq.com/openai/v1/chat/completions",
+                          timeout=90,
                           headers={"Authorization": f"Bearer {key}"},
                           json={"model": model, "temperature": 0.1,
-                                "response_format": {"type": "json_object"},
                                 "messages": [{"role": "user", "content": content}]})
         r.raise_for_status()
         return _parse_json_array(r.json()["choices"][0]["message"]["content"])
     except Exception as ex:
-        sys.stderr.write(f"openai vision failed: {str(ex)[:140]}\n")
+        sys.stderr.write(f"groq vision failed: {str(ex)[:140]}\n")
         return []
 
 
@@ -204,18 +218,94 @@ _PICK_VOCAB = {
 _OU_PICKS = {"OVER", "UNDER"}
 
 
+# Markets we understand *strictly* (fixed pick vocab). Anything outside this set
+# is still accepted as a custom market (see _validate_tip) as long as it carries a
+# non-empty selection — we normalize it rather than reject it, so exotic markets
+# (corners, cards, player props, combos, half-time variants…) are never lost.
+KNOWN_MARKETS = {"1X2", "DC", "DNB", "OU05", "OU15", "OU25", "OU35", "OU45",
+                 "BTTS", "CS", "AH", "EH", "HTFT"}
+_PICK_VOCAB = {
+    "1X2": {"1", "X", "2"},
+    "DC": {"1X", "X2", "12"},
+    "DNB": {"1", "2"},
+    "BTTS": {"YES", "NO"},
+}
+_OU_PICKS = {"OVER", "UNDER"}
+
+# Normalize free-form / localized market labels to our canonical codes. The value
+# may be a plain code, or a (code, forced_pick) tuple when the label also fixes the
+# selection (e.g. "over 2.5" → OU25/Over). Longest keys are matched first.
+_MARKET_ALIASES = {
+    "1x2": "1X2", "match result": "1X2", "full time result": "1X2", "ftr": "1X2",
+    "moneyline": "1X2", "ml": "1X2", "wdw": "1X2", "نتیجه": "1X2", "برنده": "1X2",
+    "double chance": "DC", "dc": "DC", "دبل شانس": "DC", "شانس دوبل": "DC",
+    "draw no bet": "DNB", "dnb": "DNB", "بدون تساوی": "DNB",
+    "both teams to score": "BTTS", "btts": "BTTS", "gg/ng": "BTTS", "gg": ("BTTS", "Yes"),
+    "ng": ("BTTS", "No"), "هر دو گل": "BTTS", "هر دو تیم گل": "BTTS",
+    "correct score": "CS", "cs": "CS", "نتیجه دقیق": "CS",
+    "over/under": "OU25", "o/u": "OU25", "totals": "OU25", "total goals": "OU25",
+    "goals over/under": "OU25", "زیر/بالای گل": "OU25",
+    "asian handicap": "AH", "ah": "AH", "هندیکاپ آسیایی": "AH", "handicap": "AH",
+    "european handicap": "EH", "eh": "EH", "3-way handicap": "EH",
+    "ht/ft": "HTFT", "htft": "HTFT", "half time/full time": "HTFT", "نیمه/پایان": "HTFT",
+    "corners": "CORN_OU", "corner": "CORN_OU", "total corners": "CORN_OU", "کرنر": "CORN_OU",
+    "cards": "CARD_OU", "card": "CARD_OU", "total cards": "CARD_OU", "کارت": "CARD_OU",
+    "bookings": "CARD_OU", "offsides": "OFF_OU", "shots": "SHOT_OU",
+    "anytime goalscorer": "PLAYER_GOAL", "goalscorer": "PLAYER_GOAL", "گلزن": "PLAYER_GOAL",
+    "anytime scorer": "PLAYER_GOAL", "assist": "PLAYER_ASSIST", "پاس گل": "PLAYER_ASSIST",
+    "bet builder": "COMBO", "same game multi": "COMBO", "combo": "COMBO", "ترکیبی": "COMBO",
+}
+# A tolerant matcher for any code we can't map explicitly but that still looks
+# like a real market code (letters, digits, _ / - . and spaces).
+_CUSTOM_MARKET_RE = None  # compiled lazily in _validate_tip
+
+
+def _canon_market(raw_market, raw_pick):
+    """Return (market_code, forced_pick_or_None). Maps aliases → canonical codes;
+    folds an over/under line embedded in the label into OU-with-line; leaves an
+    already-canonical or reasonable custom code as-is (uppercased)."""
+    import re
+    m = str(raw_market or "").strip()
+    if not m:
+        return "1X2", None
+    low = m.lower()
+    # exact alias hit
+    if low in _MARKET_ALIASES:
+        val = _MARKET_ALIASES[low]
+        return (val, None) if isinstance(val, str) else val
+    # "over 2.5" / "under 1.5" style folded into OU<line>
+    mo = re.fullmatch(r"(over|under)\s*([0-9]+(?:\.[0-9])?)", low)
+    if mo:
+        line = mo.group(2).replace(".", "")
+        return f"OU{line if len(line) > 1 else line + '5'}", mo.group(1).capitalize()
+    # substring alias (label carries extra words)
+    for k, val in _MARKET_ALIASES.items():
+        if k in low:
+            return (val, None) if isinstance(val, str) else val
+    # otherwise treat as a custom code, normalized to UPPER_SNAKE
+    code = re.sub(r"[^0-9A-Za-z]+", "_", m).strip("_").upper()
+    return (code or "CUSTOM"), None
+
+
 def _validate_tip(it):
     """Sanity-check one raw tip. Returns (normalized_dict, "") or (None, reason).
 
-    Rigor: both team names present, distinct and plausible; a known market with a
-    pick from that market's vocabulary; odds — when present — a decimal in a
-    realistic range. Anything off is rejected with a specific Persian reason so
-    bad data is never silently registered."""
+    Rigor without over-restriction: both team names must be present, distinct and
+    plausible, and there must be a concrete selection. Markets are normalized
+    (aliases → canonical codes); for the CORE markets we enforce the exact pick
+    vocabulary, but ANY other valid market (corners, cards, player props, combos,
+    half-time variants, custom codes…) is accepted and normalized rather than
+    dropped. Odds — when present — must be a decimal in a realistic range.
+    Rejections carry a specific Persian reason so bad data is never registered."""
     import re
     home = str(it.get("home") or "").strip()
     away = str(it.get("away") or "").strip()
     pick = str(it.get("pick") or "").strip()
-    market = (str(it.get("market") or "1X2").strip().upper() or "1X2")
+    market, forced = _canon_market(it.get("market"), pick)
+    if forced and not pick:
+        pick = forced
+    elif forced:
+        pick = forced  # label fixes the selection (e.g. "over 2.5")
 
     if not home or not away:
         return None, "نام هر دو تیم لازم است"
@@ -227,17 +317,23 @@ def _validate_tip(it):
         return None, "نام تیم نامعتبر"
     if not pick:
         return None, "انتخاب مشخص نیست"
-    if market not in KNOWN_MARKETS:
-        return None, f"مارکت ناشناخته: {market}"
 
-    # pick must belong to the market's vocabulary
+    line = it.get("line")
+    line = None if line in (None, "", "null", "None") else str(line).strip()
+
+    # Strict pick vocab ONLY for the core markets; custom markets pass through.
     pu = pick.upper()
     if market in _PICK_VOCAB and pu not in _PICK_VOCAB[market]:
         return None, f"انتخاب نامعتبر برای {market}: {pick}"
-    if market.startswith("OU") and pu not in _OU_PICKS:
+    if market.startswith("OU") and market in KNOWN_MARKETS and pu not in _OU_PICKS:
         return None, f"انتخاب اوور/آندر نامعتبر: {pick}"
     if market == "CS" and not re.fullmatch(r"\d{1,2}-\d{1,2}", pick):
         return None, f"نتیجهٔ دقیق نامعتبر: {pick}"
+    if market == "HTFT" and not re.fullmatch(r"[1X2]/[1X2]", pu):
+        return None, f"انتخاب نیمه/پایان نامعتبر: {pick}"
+    # For any custom/extended market, the market code itself must look sane.
+    if market not in KNOWN_MARKETS and not re.fullmatch(r"[0-9A-Z][0-9A-Z_./-]{0,23}", market):
+        return None, f"کد بازار نامعتبر: {market}"
 
     odds = it.get("odds")
     if odds not in (None, "", "null", "None"):
@@ -251,20 +347,20 @@ def _validate_tip(it):
         odds = None
 
     return {"home": home[:40], "away": away[:40], "market": market,
-            "pick": pick, "odds": odds,
+            "pick": pick[:60], "line": line, "odds": odds,
             "league": (str(it.get("league") or "").strip() or None),
             "prob": it.get("prob"), "note": str(it.get("note") or "").strip()[:120]}, ""
 
 
 def read_slip(text, images):
-    """Read a bet slip (text + images) with Gemini→OpenAI fallback + validation.
+    """Read a bet slip (text + images) with Gemini→Groq fallback + validation.
 
     images: list of (mime_type, raw_bytes). Returns (tips, rejections, meta):
       tips       — validated tip dicts (see _validate_tip)
       rejections — list of (raw_item, reason) for tips that failed sanity checks
-      meta       — {"reader": "gemini"|"openai"|None, ...}
+      meta       — {"reader": "gemini"|"groq"|None, ...}
 
-    Primary = Gemini multimodal. Falls back to OpenAI vision when Gemini has no
+    Primary = Gemini multimodal. Falls back to Groq vision when Gemini has no
     key, errors, or yields nothing usable (missing teams/pick)."""
     def _usable(items):
         return bool(items) and any(
@@ -274,14 +370,14 @@ def read_slip(text, images):
     if _gemini_key():
         raw, reader = _gemini_extract(text or "", images), "gemini"
 
-    # Fallback to OpenAI when Gemini is absent or came back empty/incomplete.
-    if not _usable(raw) and os.environ.get("OPENAI_API_KEY"):
-        alt = _openai_vision_extract(text or "", images)
+    # Fallback to Groq when Gemini is absent or came back empty/incomplete.
+    if not _usable(raw) and os.environ.get("GROQ_API_KEY"):
+        alt = _groq_vision_extract(text or "", images)
         if _usable(alt) or raw is None:
-            raw, reader = alt, "openai"
+            raw, reader = alt, "groq"
 
     if raw is None:
-        return [], [], {"reader": None, "error": "no Gemini/OpenAI key configured"}
+        return [], [], {"reader": None, "error": "no Gemini/Groq key configured"}
 
     tips, rejects = [], []
     for it in raw[:20]:
@@ -316,6 +412,7 @@ def _raw_to_tip(it, origin, is_image, match_date):
             "source_type": "telegram_personal", "lang": "fa", "league": league,
             "home": home[:40], "away": away[:40], "match_date": match_date,
             "market": str(it.get("market") or "1X2"), "pick": pick,
+            "line": it.get("line"),
             "prob": prob, "odds": odds, "note": note, "url": None}
 
 
@@ -412,7 +509,7 @@ def run():
                         photos_skipped += 1
 
             found = []
-            # 2) PRIMARY Gemini → OpenAI fallback + validation (shared with the bot)
+            # 2) PRIMARY Gemini → Groq fallback + validation (shared with the bot)
             valids, rejects, meta = read_slip(text, images)
             if meta.get("reader"):
                 readers_used.add(meta["reader"])
@@ -454,16 +551,16 @@ def run():
                    "messages": manifest}, f, ensure_ascii=False, indent=1)
 
     hint = ""
-    if photos_saved and not have_gemini and not os.environ.get("OPENAI_API_KEY") \
+    if photos_saved and not have_gemini and not os.environ.get("GROQ_API_KEY") \
             and not os.environ.get("AI_API_KEY"):
-        hint = ("photos saved but not read — set GEMINI_API_KEY or OPENAI_API_KEY "
+        hint = ("photos saved but not read — set GEMINI_API_KEY or GROQ_API_KEY "
                 "for vision")
     if readers_used:
         reader = "+".join(sorted(readers_used))
     elif have_gemini:
         reader = "gemini"
-    elif os.environ.get("OPENAI_API_KEY"):
-        reader = "openai"
+    elif os.environ.get("GROQ_API_KEY"):
+        reader = "groq"
     elif os.environ.get("AI_API_KEY"):
         reader = "pluggable"
     else:
