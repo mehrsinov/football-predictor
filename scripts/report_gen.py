@@ -215,8 +215,9 @@ def build():
                 L.append(f"   🤖 {ai['picks'][str(p['fixture_id'])]}")
             L.append("")
         for mx in curated.get("mixes", []):
-            legs = " + ".join(f"{l['m']} ({l['pick']})" for l in mx["legs"])
-            L.append(f"**🎲 {mx['name']}:** {legs} | ضریب ترکیبی: **{mx['odds']}** | احتمال: {pct(mx['p'])}")
+            legs_s = " + ".join(f"{l['m']} ({l['pick']})" for l in mx["legs"])
+            approx = "~" if mx.get("estimated") else ""   # estimated fair-odds price, not a firm market quote
+            L.append(f"**🎲 {mx['name']}:** {legs_s} | ضریب ترکیبی: **{approx}{mx['odds']}** | احتمال: {pct(mx['p'])}")
             L.append("")
         L.append(f"_{curated.get('note','')}_")
         L.append("")
@@ -244,31 +245,35 @@ def build():
                      f"({o['n_sources']} منبع: {srcs}) | احتمال مدل: {pct(o['blend_p'])}")
         L.append("")
 
-    # combos from safest distinct-match picks with real odds
-    combo_pool = [o for o in opts if odds_ok(o) and o["blend_p"] >= 0.58]
-    used = set()
-    legs = []
-    for o in combo_pool:
-        k = (o["home"], o["away"])
-        if k not in used:
-            legs.append(o)
-            used.add(k)
-    if len(legs) >= 2:
-        L.append("## 🎲 پیشنهاد ترکیبی")
-        L.append("")
-        two = legs[:2]
-        p2 = two[0]["blend_p"] * two[1]["blend_p"]
-        o2 = two[0]["odds"] * two[1]["odds"]
-        L.append(f"**دوبل امن:** " + " + ".join(f"{x['home']}–{x['away']} ({fa_market(x['market'], x['pick'])})" for x in two)
-                 + f" | ضریب ترکیبی: {o2:.2f} | احتمال: {pct(p2)}")
-        if len(legs) >= 3:
-            three = legs[:3]
-            p3 = three[0]["blend_p"] * three[1]["blend_p"] * three[2]["blend_p"]
-            o3 = three[0]["odds"] * three[1]["odds"] * three[2]["odds"]
+    # Fallback combos — built ONLY when the curated layer produced no mixes (e.g.
+    # picks.py degraded). Normally curated["mixes"] above is the SINGLE source of
+    # truth for combos; running this in parallel every day double-counts/diverges.
+    # See picks.build_mixes (emits as many combos as qualify).
+    if not (curated and curated.get("mixes")):
+        combo_pool = [o for o in opts if odds_ok(o) and o["blend_p"] >= 0.58]
+        used = set()
+        legs = []
+        for o in combo_pool:
+            k = (o["home"], o["away"])
+            if k not in used:
+                legs.append(o)
+                used.add(k)
+        if len(legs) >= 2:
+            L.append("## 🎲 پیشنهاد ترکیبی")
             L.append("")
-            L.append(f"**سه‌گانه:** " + " + ".join(f"{x['home']}–{x['away']} ({fa_market(x['market'], x['pick'])})" for x in three)
-                     + f" | ضریب ترکیبی: {o3:.2f} | احتمال: {pct(p3)}")
-        L.append("")
+            two = legs[:2]
+            p2 = two[0]["blend_p"] * two[1]["blend_p"]
+            o2 = two[0]["odds"] * two[1]["odds"]
+            L.append(f"**دوبل امن:** " + " + ".join(f"{x['home']}–{x['away']} ({fa_market(x['market'], x['pick'])})" for x in two)
+                     + f" | ضریب ترکیبی: {o2:.2f} | احتمال: {pct(p2)}")
+            if len(legs) >= 3:
+                three = legs[:3]
+                p3 = three[0]["blend_p"] * three[1]["blend_p"] * three[2]["blend_p"]
+                o3 = three[0]["odds"] * three[1]["odds"] * three[2]["odds"]
+                L.append("")
+                L.append(f"**سه‌گانه:** " + " + ".join(f"{x['home']}–{x['away']} ({fa_market(x['market'], x['pick'])})" for x in three)
+                         + f" | ضریب ترکیبی: {o3:.2f} | احتمال: {pct(p3)}")
+            L.append("")
 
     if data.get("tips_only"):
         L.append("## 📡 تیپ‌های خارج از پوشش مدل (فقط اجماع منابع)")

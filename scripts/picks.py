@@ -24,6 +24,15 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output")
 
 MAIN_MARKETS = {"1X2", "DC", "OU15", "OU25", "OU35", "BTTS", "DNB"}
 
+# --- Mix (parlay) tuning — emit AS MANY combos AS QUALIFY, no fixed cap. -----
+# A combo qualifies when: 2..MAX_LEGS legs, EVERY leg p >= LEG_MIN, and the
+# combined (product) probability >= COMBINED_MIN. Longer combos therefore need
+# stronger legs to survive; this product floor is the honesty guard — a weak or
+# single-strong-pick day emits zero combos rather than a padded long-shot.
+LEG_MIN = 0.58        # min single-leg probability to be mix-eligible
+COMBINED_MIN = 0.20   # min combined product probability for a combo to qualify
+MAX_LEGS = 6          # never build a combo longer than this
+
 FA = {
     ("1X2", "1"): "برد میزبان", ("1X2", "X"): "مساوی", ("1X2", "2"): "برد مهمان",
     ("DC", "1X"): "میزبان نمی‌بازد", ("DC", "X2"): "مهمان نمی‌بازد", ("DC", "12"): "مساوی نمی‌شود",
@@ -169,6 +178,74 @@ def reasons_for(opt, fx, th, ta):
     return R[:4]
 
 
+def build_mixes(picks):
+    """Build EVERY qualifying combo from the curated picks — no fixed cap.
+
+    Leg pool = distinct-match, known-team picks with p >= LEG_MIN, ordered by
+    consensus strength (n_sources) then probability. From it we emit a family:
+      * top-k accumulators for k = 2..min(len(pool), MAX_LEGS) — the headline combos
+      * a value combo (only value-flagged legs), when >= 2 qualify
+      * a "mix of the day" (highest-EV legs), when distinct from the above
+    A combo is kept only if it clears `qualifies()` (see the tuning constants);
+    duplicate leg-sets are removed. Honest by construction: a one-strong-pick day
+    yields zero combos instead of a padded long-shot.
+
+    When a leg lacks market odds, its fair odds (1/p) are used as the MINIMUM
+    acceptable price and the combo is flagged `estimated`.
+    """
+    pool = [p for p in picks if p.get("known_teams", True) and p["p"] >= LEG_MIN]
+    pool.sort(key=lambda l: (-(l.get("n_sources") or 0), -l["p"]))
+
+    def leg_odds(l):
+        return (float(l["odds"]), False) if l.get("odds") else (round(1 / l["p"], 2), True)
+
+    def qualifies(ls):
+        if not (2 <= len(ls) <= MAX_LEGS):
+            return False
+        if any(l["p"] < LEG_MIN for l in ls):
+            return False
+        return math.prod(l["p"] for l in ls) >= COMBINED_MIN
+
+    def mk_mix(name, ls):
+        prod, est = 1.0, False
+        for l in ls:
+            o, e = leg_odds(l)
+            prod *= o
+            est = est or e
+        pk = parlay_kelly([l["p"] for l in ls], prod)
+        return {"name": name,
+                "legs": [{"m": f"{l['home']} — {l['away']}", "pick": l["label_fa"],
+                          "odds": leg_odds(l)[0]} for l in ls],
+                "odds": round(prod, 2), "estimated": est,
+                "p": round(math.prod(l["p"] for l in ls), 3),
+                "stake": pk, "stake_units": round(pk * 100.0, 2),
+                "_legset": frozenset(l["fixture_id"] for l in ls)}
+
+    names_k = {2: "دوبل برتر", 3: "سه‌گانهٔ برتر", 4: "چهارگانهٔ برتر",
+               5: "پنج‌گانهٔ برتر", 6: "شش‌گانهٔ برتر"}
+    candidates = []
+    for k in range(2, min(len(pool), MAX_LEGS) + 1):        # nested top-k accumulators
+        ls = pool[:k]
+        if qualifies(ls):
+            candidates.append(mk_mix(names_k.get(k, f"{k}تایی برتر"), ls))
+    vlegs = [l for l in pool if l.get("value")][:MAX_LEGS]  # value-only combo
+    if qualifies(vlegs):
+        candidates.append(mk_mix("میکس ارزشی 💎", vlegs))
+    evlegs = sorted([l for l in pool if (l.get("ev") or 0) > 0],
+                    key=lambda l: -(l.get("ev") or 0))[:MAX_LEGS]  # best combined value
+    if qualifies(evlegs):
+        candidates.append(mk_mix("میکس روز (بهترین ارزش ترکیبی)", evlegs))
+
+    mixes, seen = [], set()
+    for mx in candidates:
+        legset = mx.pop("_legset")
+        if legset in seen:
+            continue
+        seen.add(legset)
+        mixes.append(mx)
+    return mixes
+
+
 def build():
     ranked = _load("ranked_options.json", {})
     web = _load("webapp_data.json", {})
@@ -214,38 +291,14 @@ def build():
             "market": o["market"], "pick": o["pick"], "label_fa": fa_label(o["market"], o["pick"]),
             "p": o["blend_p"], "odds": o.get("odds"), "ev": o.get("ev"),
             "value": bool(o.get("value_flag")), "n_sources": o.get("n_sources") or 0,
+            "known_teams": bool(o.get("known_teams", True)),
             "sources": o.get("source_names") or [], "reasons": R,
             "stake": stake,                       # quarter-Kelly fraction of bankroll
             "stake_units": stake_units(o["blend_p"], o.get("odds")),
         })
     picks = picks[:12]
 
-    # logical mixes; when a leg lacks market odds, use fair odds (1/p) as the
-    # MINIMUM acceptable price and label the combo estimate accordingly
-    legs = [p for p in picks if p["p"] >= 0.60][:6]
-
-    def leg_odds(l):
-        return (float(l["odds"]), False) if l.get("odds") else (round(1 / l["p"], 2), True)
-
-    def mk_mix(name, ls):
-        prod, est = 1.0, False
-        for l in ls:
-            o, e = leg_odds(l)
-            prod *= o
-            est = est or e
-        pk = parlay_kelly([l["p"] for l in ls], prod)
-        return {"name": name,
-                "legs": [{"m": f"{l['home']} — {l['away']}", "pick": l["label_fa"],
-                          "odds": leg_odds(l)[0]} for l in ls],
-                "odds": round(prod, 2), "estimated": est,
-                "p": round(math.prod(l["p"] for l in ls), 3),
-                "stake": pk, "stake_units": round(pk * 100.0, 2)}
-
-    mixes = []
-    if len(legs) >= 2:
-        mixes.append(mk_mix("دوبل منطقی", legs[:2]))
-    if len(legs) >= 3:
-        mixes.append(mk_mix("سه‌گانه", legs[:3]))
+    mixes = build_mixes(picks)
 
     out = {"picks": picks, "mixes": mixes,
            "note": "فقط گزینه‌های چندمنبعی یا با اطمینان بالای مدل؛ حداکثر یک پیک از هر بازی."}
