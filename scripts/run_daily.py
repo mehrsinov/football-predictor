@@ -254,8 +254,12 @@ def refresh_understat_if_stale(max_age_days=25):
     step("understat xG refresh", "understat_fetch.py")
 
 
-def step(name, script, args=None, timeout=None):
-    """Run a script as a subprocess with timeout and logging."""
+def step(name, script, args=None, timeout=None, echo_stderr=False):
+    """Run a script as a subprocess with timeout and logging.
+
+    echo_stderr: on success, also log the script's stderr (head/tail). Useful for
+    scripts like youtube_fetch that write per-source diagnostics there.
+    """
     t0 = time.time()
     try:
         r = subprocess.run([sys.executable, os.path.join(HERE, script)] + (args or []),
@@ -263,6 +267,15 @@ def step(name, script, args=None, timeout=None):
         elapsed = time.time() - t0
         if r.returncode == 0:
             log.info("[OK] %s (%.0fs) %s", name, elapsed, r.stdout.strip()[:250])
+            if echo_stderr:
+                err = r.stderr.strip()
+                if not err:
+                    pass
+                elif len(err) <= 1500:
+                    log.info("stderr: %s", err)
+                else:
+                    log.info("stderr[head]: %s", err[:400])
+                    log.info("stderr[tail]: %s", err[-1100:])
         else:
             log.error("[FAIL] %s (%.0fs) — returncode %d", name, elapsed, r.returncode)
             log.error("stdout: %s", r.stdout.strip()[:400])
@@ -315,7 +328,8 @@ def main():
         # gate on a key here just to avoid spawning a pointless subprocess.
         if (os.environ.get("YT_API_KEY") or os.environ.get("GEMINI_API_KEY")
                 or os.environ.get("GOOGLE_API_KEY") or os.environ.get("AI_API_KEY")):
-            step("youtube tips (Gemini video analysis)", "youtube_fetch.py", timeout=600)
+            step("youtube tips (Gemini video analysis)", "youtube_fetch.py", timeout=600,
+                 echo_stderr=True)
         # Telegram bot inbox: posts the user forwards to the delivery bot ->
         # tips_tg_inbox.json. Needs TG_BOT_TOKEN in THIS step's env (the daily.yml
         # pipeline step), not only in the later delivery step.
