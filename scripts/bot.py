@@ -315,19 +315,38 @@ def view_match_analysis(cid, home, away, min_odds=1.0, value_only=False, mid=Non
 
 # slip checking (text + photo) -> probabilities
 def check_slip(cid, text=None, photo_id=None):
+    """Read a bet slip (text and/or photo, any language) and analyze it.
+
+    Uses tg_bot_inbox.read_slip: Gemini multimodal first, OpenAI Vision fallback,
+    then rigorous validation (both teams, valid market/pick, sane decimal odds).
+    Falls back to a regex parser for structured text when no AI key is set."""
     from tg_tip_extract import extract_tips
-    tips = []
-    if text:
+    from tg_bot_inbox import read_slip
+    today = str(datetime.now(timezone.utc).date())
+
+    img = _fetch_photo_bytes(photo_id) if photo_id else None
+    photo_failed = bool(photo_id) and img is None
+    images = [("image/jpeg", img)] if img else []
+
+    # 1) AI reader — Gemini → OpenAI fallback, with validation/sanity checks
+    tips, rejects, meta = read_slip(text or "", images)
+
+    # 2) regex fallback for structured text when the AI layer found nothing usable
+    if text and not tips:
         tips += extract_tips(text, source="tg:کوپن شما", source_type="telegram_personal",
-                             match_date=str(datetime.now(timezone.utc).date()))
-    if photo_id:
-        got = read_slip_photo(photo_id)
-        if got is None:
-            send(cid, "📸 عکس رسید ولی خواندن تصویر نیاز به کلید AI دارد (AI_API_KEY).")
-        else:
-            tips += got
+                             match_date=today)
+
+    if photo_failed and not tips:
+        return send(cid, "📸 عکس دریافت نشد یا خیلی بزرگ بود؛ دوباره و با کیفیت کمتر بفرست.",
+                    kb=[[btn("🏠 منو", "menu")]])
     if not tips:
-        return send(cid, "تیپ قابل تشخیصی پیدا نکردم 🤔 (دو تیم + انتخاب لازم است).",
+        if meta.get("reader") is None and (img or text):
+            return send(cid, "📸 برای خواندن تصویر/متن نیاز به کلید AI هست "
+                             "(GEMINI_API_KEY یا OPENAI_API_KEY).",
+                        kb=[[btn("🏠 منو", "menu")]])
+        # surface the most specific validation reason we have
+        reason = rejects[0][1] if rejects else "دو تیم + انتخاب لازم است"
+        return send(cid, f"تیپ قابل تشخیصی پیدا نکردم 🤔 ({reason}).",
                     kb=[[btn("🏠 منو", "menu")]])
     out, probs = ["🧾 *تحلیل کوپن تو*\n"], []
     for t in tips[:12]:
@@ -366,28 +385,31 @@ def check_slip(cid, text=None, photo_id=None):
     send(cid, "\n".join(out), kb=[[btn("🏠 منو", "menu")]])
 
 
-def read_slip_photo(photo_id):
+def _fetch_photo_bytes(photo_id):
+    """Download a Telegram photo by file_id -> raw bytes (None on failure/too big)."""
     try:
-        from tg_bot_inbox import _vision_extract
         fp = api("getFile", file_id=photo_id).get("result", {}).get("file_path")
         if not fp:
-            return []
-        img = requests.get(f"https://api.telegram.org/file/bot{TOKEN}/{fp}", timeout=30).content
-        if len(img) > 4_000_000:
-            return []
-        items = _vision_extract(base64.b64encode(img).decode())
-        if items is None:
             return None
-        out = []
-        for it in items[:12]:
-            if it.get("home") and it.get("away") and it.get("pick"):
-                out.append({"home": str(it["home"])[:40], "away": str(it["away"])[:40],
-                            "market": str(it.get("market") or "1X2"), "pick": str(it["pick"]),
-                            "odds": it.get("odds")})
-        return out
+        img = requests.get(f"https://api.telegram.org/file/bot{TOKEN}/{fp}", timeout=30).content
+        if not img or len(img) > 4_000_000:
+            return None
+        return img
     except Exception as ex:
-        sys.stderr.write("slip photo err: " + str(ex)[:100] + "\n")
-        return []
+        sys.stderr.write("slip photo fetch err: " + str(ex)[:100] + "\n")
+        return None
+
+
+def _slip_items_to_tips(items):
+    """Deprecated: normalization now happens in tg_bot_inbox.read_slip/_validate_tip.
+    Kept as a thin shim in case other callers import it."""
+    out = []
+    for it in (items or [])[:12]:
+        if it.get("home") and it.get("away") and it.get("pick"):
+            out.append({"home": str(it["home"])[:40], "away": str(it["away"])[:40],
+                        "market": str(it.get("market") or "1X2"), "pick": str(it["pick"]),
+                        "odds": it.get("odds")})
+    return out
 
 
 def view_settings(cid, state, mid=None):

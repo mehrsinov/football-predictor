@@ -64,15 +64,19 @@ VISION_PROMPT = """این تصویر یک کوپن/اسلیپ شرط‌بندی 
 
 
 def _gemini_key():
-    """Gemini API key from the usual aliases (AI_API_KEY only if provider=gemini)."""
-    if os.environ.get("GEMINI_API_KEY"):
-        return os.environ["GEMINI_API_KEY"].strip()
-    if os.environ.get("GOOGLE_API_KEY"):
-        return os.environ["GOOGLE_API_KEY"].strip()
-    if os.environ.get("YT_API_KEY"):
-        return os.environ["YT_API_KEY"].strip()
-    if os.environ.get("AI_PROVIDER", "").strip().lower() == "gemini":
-        return os.environ.get("AI_API_KEY", "").strip()
+    """Gemini API key from the usual aliases.
+
+    Also treats AI_API_KEY as a Gemini key when AI_PROVIDER=gemini OR the key
+    looks like a Google key ("AIza…") — so the slip reader works even if the user
+    set only AI_API_KEY and left AI_PROVIDER unset (the common misconfig)."""
+    for var in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "YT_API_KEY"):
+        v = os.environ.get(var, "").strip()
+        if v:
+            return v
+    ai = os.environ.get("AI_API_KEY", "").strip()
+    if ai and (os.environ.get("AI_PROVIDER", "").strip().lower() == "gemini"
+               or ai.startswith("AIza")):
+        return ai
     return ""
 
 
@@ -159,6 +163,133 @@ def _vision_extract(img_b64):
         return []
 
 
+def _openai_vision_extract(text, images):
+    """OpenAI vision reader — the fallback when Gemini fails / is incomplete.
+
+    Keyed explicitly on OPENAI_API_KEY (independent of the AI_PROVIDER-based
+    _vision_extract). images: list of (mime_type, raw_bytes). Returns a list of
+    raw tip dicts, or None when OPENAI_API_KEY is not set."""
+    key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not key:
+        return None
+    model = os.environ.get("OPENAI_VISION_MODEL", "").strip() or "gpt-4o-mini"
+    content = [{"type": "text", "text": EXTRACT_PROMPT}]
+    if text:
+        content.append({"type": "text", "text": "متن پیام:\n" + text[:4000]})
+    for mime, raw in images:
+        b64 = base64.b64encode(raw).decode()
+        content.append({"type": "image_url",
+                        "image_url": {"url": f"data:{mime};base64,{b64}"}})
+    try:
+        r = requests.post("https://api.openai.com/v1/chat/completions", timeout=90,
+                          headers={"Authorization": f"Bearer {key}"},
+                          json={"model": model, "temperature": 0.1,
+                                "response_format": {"type": "json_object"},
+                                "messages": [{"role": "user", "content": content}]})
+        r.raise_for_status()
+        return _parse_json_array(r.json()["choices"][0]["message"]["content"])
+    except Exception as ex:
+        sys.stderr.write(f"openai vision failed: {str(ex)[:140]}\n")
+        return []
+
+
+# Markets the downstream model understands; pick vocab per market for sanity checks.
+KNOWN_MARKETS = {"1X2", "DC", "OU05", "OU15", "OU25", "OU35", "OU45",
+                 "BTTS", "CS", "AH", "DNB"}
+_PICK_VOCAB = {
+    "1X2": {"1", "X", "2"},
+    "DC": {"1X", "X2", "12"},
+    "BTTS": {"YES", "NO"},
+}
+_OU_PICKS = {"OVER", "UNDER"}
+
+
+def _validate_tip(it):
+    """Sanity-check one raw tip. Returns (normalized_dict, "") or (None, reason).
+
+    Rigor: both team names present, distinct and plausible; a known market with a
+    pick from that market's vocabulary; odds — when present — a decimal in a
+    realistic range. Anything off is rejected with a specific Persian reason so
+    bad data is never silently registered."""
+    import re
+    home = str(it.get("home") or "").strip()
+    away = str(it.get("away") or "").strip()
+    pick = str(it.get("pick") or "").strip()
+    market = (str(it.get("market") or "1X2").strip().upper() or "1X2")
+
+    if not home or not away:
+        return None, "نام هر دو تیم لازم است"
+    if home.lower() == away.lower():
+        return None, f"دو تیم یکسان‌اند ({home})"
+    if len(home) < 2 or len(away) < 2 or len(home) > 40 or len(away) > 40:
+        return None, "نام تیم نامعتبر"
+    if not any(c.isalpha() for c in home) or not any(c.isalpha() for c in away):
+        return None, "نام تیم نامعتبر"
+    if not pick:
+        return None, "انتخاب مشخص نیست"
+    if market not in KNOWN_MARKETS:
+        return None, f"مارکت ناشناخته: {market}"
+
+    # pick must belong to the market's vocabulary
+    pu = pick.upper()
+    if market in _PICK_VOCAB and pu not in _PICK_VOCAB[market]:
+        return None, f"انتخاب نامعتبر برای {market}: {pick}"
+    if market.startswith("OU") and pu not in _OU_PICKS:
+        return None, f"انتخاب اوور/آندر نامعتبر: {pick}"
+    if market == "CS" and not re.fullmatch(r"\d{1,2}-\d{1,2}", pick):
+        return None, f"نتیجهٔ دقیق نامعتبر: {pick}"
+
+    odds = it.get("odds")
+    if odds not in (None, "", "null", "None"):
+        try:
+            odds = float(str(odds).replace(",", "."))
+        except (TypeError, ValueError):
+            return None, f"ضریب نامعتبر: {it.get('odds')}"
+        if not (1.01 <= odds <= 100.0):
+            return None, f"ضریب خارج از محدودهٔ منطقی: {odds}"
+    else:
+        odds = None
+
+    return {"home": home[:40], "away": away[:40], "market": market,
+            "pick": pick, "odds": odds,
+            "league": (str(it.get("league") or "").strip() or None),
+            "prob": it.get("prob"), "note": str(it.get("note") or "").strip()[:120]}, ""
+
+
+def read_slip(text, images):
+    """Read a bet slip (text + images) with Gemini→OpenAI fallback + validation.
+
+    images: list of (mime_type, raw_bytes). Returns (tips, rejections, meta):
+      tips       — validated tip dicts (see _validate_tip)
+      rejections — list of (raw_item, reason) for tips that failed sanity checks
+      meta       — {"reader": "gemini"|"openai"|None, ...}
+
+    Primary = Gemini multimodal. Falls back to OpenAI vision when Gemini has no
+    key, errors, or yields nothing usable (missing teams/pick)."""
+    def _usable(items):
+        return bool(items) and any(
+            (i.get("home") and i.get("away") and i.get("pick")) for i in (items or []))
+
+    raw, reader = None, None
+    if _gemini_key():
+        raw, reader = _gemini_extract(text or "", images), "gemini"
+
+    # Fallback to OpenAI when Gemini is absent or came back empty/incomplete.
+    if not _usable(raw) and os.environ.get("OPENAI_API_KEY"):
+        alt = _openai_vision_extract(text or "", images)
+        if _usable(alt) or raw is None:
+            raw, reader = alt, "openai"
+
+    if raw is None:
+        return [], [], {"reader": None, "error": "no Gemini/OpenAI key configured"}
+
+    tips, rejects = [], []
+    for it in raw[:20]:
+        norm, reason = _validate_tip(it)
+        (tips if norm else rejects).append(norm if norm else (it, reason))
+    return tips, rejects, {"reader": reader}
+
+
 def _raw_to_tip(it, origin, is_image, match_date):
     """Canonical tip dict from a raw Gemini/vision item (merge_rank canonizes)."""
     home = str(it.get("home") or "").strip()
@@ -239,7 +370,8 @@ def run():
 
     tips, sources, manifest = [], {}, []
     offset, pages = None, 0
-    photos_saved = photos_skipped = 0
+    photos_saved = photos_skipped = rejected_total = 0
+    readers_used = set()
 
     while pages < 10:  # up to ~1000 updates
         pages += 1
@@ -280,22 +412,20 @@ def run():
                         photos_skipped += 1
 
             found = []
-            # 2) PRIMARY: Gemini multimodal — reads text AND images together
-            g = _gemini_extract(text, images)
-            if g is not None:  # Gemini key present
-                for it in g:
-                    t = _raw_to_tip(it, origin, is_image=bool(images) and not text, match_date=mdate)
-                    if t:
-                        found.append(t)
-            elif images:  # no Gemini key → legacy pluggable vision per image
-                for _mime, raw in images:
-                    items = _vision_extract(base64.b64encode(raw).decode())
-                    for it in (items or [])[:12]:
-                        t = _raw_to_tip(it, origin, is_image=True, match_date=mdate)
-                        if t:
-                            found.append(t)
+            # 2) PRIMARY Gemini → OpenAI fallback + validation (shared with the bot)
+            valids, rejects, meta = read_slip(text, images)
+            if meta.get("reader"):
+                readers_used.add(meta["reader"])
+            for v in valids:
+                t = _raw_to_tip(v, origin, is_image=bool(images) and not text, match_date=mdate)
+                if t:
+                    found.append(t)
+            if rejects:
+                rejected_total += len(rejects)
+                sys.stderr.write(f"[tg_inbox] {origin}: {len(rejects)} tip(s) rejected — "
+                                 + "; ".join(r[1] for r in rejects[:3]) + "\n")
 
-            # 3) free, conservative regex net over the text (complements Gemini)
+            # 3) free, conservative regex net over the text (complements the AI reader)
             if text:
                 found += extract_tips(text, source=f"tg:{origin}",
                                       source_type="telegram_personal",
@@ -324,11 +454,23 @@ def run():
                    "messages": manifest}, f, ensure_ascii=False, indent=1)
 
     hint = ""
-    if photos_saved and not have_gemini and not os.environ.get("AI_API_KEY"):
-        hint = "photos saved but not read — set a Gemini key (GEMINI_API_KEY) for vision"
+    if photos_saved and not have_gemini and not os.environ.get("OPENAI_API_KEY") \
+            and not os.environ.get("AI_API_KEY"):
+        hint = ("photos saved but not read — set GEMINI_API_KEY or OPENAI_API_KEY "
+                "for vision")
+    if readers_used:
+        reader = "+".join(sorted(readers_used))
+    elif have_gemini:
+        reader = "gemini"
+    elif os.environ.get("OPENAI_API_KEY"):
+        reader = "openai"
+    elif os.environ.get("AI_API_KEY"):
+        reader = "pluggable"
+    else:
+        reader = "regex-only"
     print(json.dumps({"forwarded_tips": len(out), "channels": sources,
                       "photos_saved": photos_saved, "photos_skipped": photos_skipped,
-                      "reader": "gemini" if have_gemini else ("pluggable" if os.environ.get("AI_API_KEY") else "regex-only"),
+                      "rejected": rejected_total, "reader": reader,
                       "hint": hint}, ensure_ascii=False))
 
 

@@ -48,6 +48,8 @@ jobs:
           AI_PROVIDER:      ${{ secrets.AI_PROVIDER }}
           AI_API_KEY:       ${{ secrets.AI_API_KEY }}
           AI_MODEL:         ${{ secrets.AI_MODEL }}
+          # خواندن کوپن/عکس تیپ: Gemini اصلی + OpenAI جایگزین (هر کدام موجود بود)
+          OPENAI_API_KEY:   ${{ secrets.OPENAI_API_KEY }}
           # لایه یوتیوب: کلید Gemini از secrets؛ فهرست کانال‌ها/ریجن‌ها و مدل از vars
           # (کانال‌ها حساس نیستند و بهتر است کامیت نشوند → GitHub Variables).
           # منبع اصلی: ویدیوهای پرطرفدارِ ورزشی (mostPopular) در چند regionCode؛
