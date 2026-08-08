@@ -8,6 +8,10 @@ scripts/*.session
 output/tg_session_string.txt
 output/tg_login_state.json
 
+# عکس‌های دریافتی از بات تلگرام (کوپن/اسکرین‌شات شخصی) — هرگز عمومی نشوند!
+data/tg_media/
+output/tg_inbox_manifest.json
+
 # خروجی‌های میانی (فقط report_fa.md و docs/ کامیت می‌شوند)
 output/tips_*.json
 output/model_predictions.json

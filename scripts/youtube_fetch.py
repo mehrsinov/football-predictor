@@ -1,23 +1,31 @@
 # -*- coding: utf-8 -*-
-"""YouTube analysis layer — fills the reserved tips_youtube.json slot.
+"""YouTube analysis layer — trending Sports videos + optional curated channels.
 
-Pulls the latest videos from a CURATED list of channels (via each channel's
-public RSS feed — no YouTube Data API key needed), asks Gemini to WATCH each
-video and extract ONLY the match tips the video EXPLICITLY states, and writes
-them in the canonical tip schema so merge_rank picks them up like any other
-source. The per-video Persian summary rides along as `note` (rendered with 🎥).
+PRIMARY source (no manual channel list needed): the YouTube Data API v3
+`videos.list?chart=mostPopular&videoCategoryId=17` (Sports) queried across
+several regionCodes, so we pull whatever is trending TODAY in each region — in
+any language. Every candidate is handed to Gemini, which WATCHES it and
+extracts ONLY the match tips the video EXPLICITLY states.
 
-Honesty (hard rule): Gemini is instructed to return a tip ONLY when the video
-clearly backs a specific pick for a specific match; on any doubt it must omit.
-Nothing here fabricates a fixture or a tip — a keyless/blocked/empty run just
-writes an empty list and the pipeline continues untouched.
+OPTIONAL source: a curated channel list (YT_CHANNELS env CSV or
+scripts/yt_channels.txt, via each channel's public RSS feed) is still honoured
+and merged in when present — now purely additive, not required.
 
-Config (all optional; empty → clean skip, never an error):
-    Key   : YT_API_KEY | GEMINI_API_KEY | GOOGLE_API_KEY | AI_API_KEY
-    Model : YT_MODEL                                  (default gemini-2.5-flash)
-    Chans : YT_CHANNELS (CSV of UC.../@handle/URL) OR scripts/yt_channels.txt
-    Caps  : YT_SINCE_HOURS(30) YT_MAX_PER_CHANNEL(3) YT_MAX_CHANNELS(12)
-            YT_MAX_VIDEOS(25)
+Honesty (hard rule): Gemini returns a tip ONLY when the video clearly backs a
+specific pick for a specific match; on any doubt it omits. Nothing here
+fabricates a fixture or a tip — a keyless/blocked/empty run writes an empty
+list and the pipeline continues untouched.
+
+Keys (one Google API key with BOTH APIs enabled satisfies both lookups):
+    YouTube Data : YT_API_KEY | YT_DATA_API_KEY | GOOGLE_API_KEY | GEMINI_API_KEY
+    Gemini       : GEMINI_API_KEY | GOOGLE_API_KEY | YT_API_KEY | AI_API_KEY
+    Model        : YT_MODEL                              (default gemini-2.5-flash)
+
+Caps (all env-tunable; keep modest to control API spend):
+    mostPopular : YT_REGIONS(CSV) YT_MAX_REGIONS(6) YT_POP_PER_REGION(3)
+                  YT_POP_SINCE_HOURS(48) YT_MAX_DURATION_MIN(30)
+    channels    : YT_MAX_CHANNELS(12) YT_MAX_PER_CHANNEL(3) YT_SINCE_HOURS(30)
+    overall     : YT_MAX_VIDEOS(20)   (total videos sent to Gemini)
 
 Output: output/tips_youtube.json  (always written, even as [], anti-staleness)
 """
@@ -32,14 +40,30 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output")
 HERE = os.path.dirname(os.path.abspath(__file__))
 TODAY = date.today().isoformat()
 
-KEY = (os.environ.get("YT_API_KEY") or os.environ.get("GEMINI_API_KEY")
-       or os.environ.get("GOOGLE_API_KEY") or os.environ.get("AI_API_KEY") or "").strip()
+# Gemini key (for WATCHING videos) and YouTube Data API key (for mostPopular).
+# One Google key with both APIs enabled satisfies both — we just try the usual
+# aliases in a sensible order for each role.
+KEY = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+       or os.environ.get("YT_API_KEY") or os.environ.get("AI_API_KEY") or "").strip()
+DATA_KEY = (os.environ.get("YT_API_KEY") or os.environ.get("YT_DATA_API_KEY")
+            or os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY") or "").strip()
 MODEL = (os.environ.get("YT_MODEL") or "gemini-2.5-flash").strip()
 
+# curated-channel caps (optional path)
 SINCE_HOURS = int(os.environ.get("YT_SINCE_HOURS", "30") or 30)
 MAX_PER_CHANNEL = int(os.environ.get("YT_MAX_PER_CHANNEL", "3") or 3)
 MAX_CHANNELS = int(os.environ.get("YT_MAX_CHANNELS", "12") or 12)
-MAX_VIDEOS = int(os.environ.get("YT_MAX_VIDEOS", "25") or 25)
+
+# trending (mostPopular) caps — the PRIMARY path
+SPORTS_CATEGORY = "17"  # YouTube's fixed "Sports" videoCategoryId
+DEFAULT_REGIONS = ["GB", "ES", "IT", "DE", "BR", "TR", "IR", "FR", "AR", "US"]
+POP_SINCE_HOURS = int(os.environ.get("YT_POP_SINCE_HOURS", "48") or 48)
+POP_PER_REGION = int(os.environ.get("YT_POP_PER_REGION", "3") or 3)
+MAX_REGIONS = int(os.environ.get("YT_MAX_REGIONS", "6") or 6)
+MAX_DURATION_MIN = int(os.environ.get("YT_MAX_DURATION_MIN", "30") or 30)
+
+# overall cap on how many videos reach Gemini (cost guard, both paths combined)
+MAX_VIDEOS = int(os.environ.get("YT_MAX_VIDEOS", "20") or 20)
 
 MARKETS_OK = {"1X2", "DC", "OU15", "OU25", "OU35", "BTTS", "CS"}
 
@@ -161,6 +185,75 @@ def recent_videos(channel_id, cutoff):
         if len(vids) >= MAX_PER_CHANNEL:
             break
     return vids
+
+
+def _iso_dur_minutes(s):
+    """ISO-8601 duration (PT#H#M#S) -> minutes (float). None if unparseable."""
+    m = re.fullmatch(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", s or "")
+    if not m:
+        return None
+    h, mi, se = (int(x) if x else 0 for x in m.groups())
+    return h * 60 + mi + se / 60.0
+
+
+def popular_videos(cutoff):
+    """Trending Sports videos across regions via YouTube Data API mostPopular.
+
+    Returns [{id,url,title,desc,published,source}]. Fail-soft per region: an
+    error on one regionCode never aborts the others. Videos published before
+    *cutoff*, or longer than MAX_DURATION_MIN, are dropped (cost/relevance)."""
+    if not DATA_KEY:
+        _log("no YouTube Data API key — mostPopular skipped (channels only)")
+        return []
+    env_regions = [r.strip().upper() for r in
+                   os.environ.get("YT_REGIONS", "").replace("\n", ",").split(",") if r.strip()]
+    regions = (env_regions or DEFAULT_REGIONS)[:MAX_REGIONS]
+    out = []
+    for rc in regions:
+        url = ("https://www.googleapis.com/youtube/v3/videos"
+               "?part=snippet,contentDetails&chart=mostPopular"
+               f"&videoCategoryId={SPORTS_CATEGORY}&regionCode={rc}"
+               f"&maxResults={POP_PER_REGION}&key={DATA_KEY}")
+        txt = http_get(url, timeout=25)
+        if not txt:
+            _log(f"pop {rc}: no response")
+            continue
+        try:
+            data = json.loads(txt)
+        except Exception:
+            _log(f"pop {rc}: non-JSON response")
+            continue
+        if isinstance(data, dict) and data.get("error"):
+            _log(f"pop {rc}: API error {data['error'].get('code')} "
+                 f"{str(data['error'].get('message'))[:80]}")
+            continue
+        kept = 0
+        for it in (data.get("items") or []):
+            vid = it.get("id")
+            sn = it.get("snippet") or {}
+            cd = it.get("contentDetails") or {}
+            if not vid:
+                continue
+            pub = sn.get("publishedAt") or ""
+            try:
+                if datetime.fromisoformat(pub.replace("Z", "+00:00")) < cutoff:
+                    continue
+            except Exception:
+                pass  # keep if timestamp unparseable
+            dur = _iso_dur_minutes(cd.get("duration"))
+            if dur is not None and dur > MAX_DURATION_MIN:
+                continue
+            out.append({
+                "id": vid,
+                "url": f"https://www.youtube.com/watch?v={vid}",
+                "title": sn.get("title") or "",
+                "desc": (sn.get("description") or "")[:1500],
+                "published": pub,
+                "source": f"yt-trend:{rc}",
+            })
+            kept += 1
+        _log(f"pop {rc}: {kept} trending sports video(s)")
+    return out
 
 
 def _extract_json_array(text):
@@ -296,43 +389,57 @@ def run():
             json.dump(tips, f, indent=1, ensure_ascii=False)
 
     if not KEY:
-        _log("no API key (YT_API_KEY/GEMINI_API_KEY/GOOGLE_API_KEY/AI_API_KEY) — skip")
-        write([])
-        return
-    channels = load_channels()
-    if not channels:
-        _log("no channels configured (YT_CHANNELS / yt_channels.txt) — skip")
+        _log("no Gemini key (GEMINI_API_KEY/GOOGLE_API_KEY/YT_API_KEY/AI_API_KEY) — skip")
         write([])
         return
 
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=SINCE_HOURS)
-    tips, seen = [], set()
-    budget = MAX_VIDEOS
+    # 1) PRIMARY: today's trending Sports videos across regions (any language).
+    pop_cutoff = datetime.now(timezone.utc) - timedelta(hours=POP_SINCE_HOURS)
+    videos = popular_videos(pop_cutoff)
+
+    # 2) OPTIONAL: curated channels, purely additive when configured.
+    chan_cutoff = datetime.now(timezone.utc) - timedelta(hours=SINCE_HOURS)
+    channels = load_channels()
     for seed in channels:
-        if budget <= 0:
-            break
         cid = resolve_channel_id(seed)
         if not cid:
             continue
-        for v in recent_videos(cid, cutoff):
-            if budget <= 0:
-                break
-            budget -= 1
-            source = f"yt:{seed.lstrip('@')[:30]}"
-            for raw in analyze_video(v):
-                t = to_tip(raw, source, v["url"])
-                if not t:
-                    continue
-                k = (t["home"].lower(), t["away"].lower(), t["market"], t["pick"], source)
-                if k in seen:
-                    continue
-                seen.add(k)
-                tips.append(t)
-            _log(f"{source} {v['id']}: total tips so far {len(tips)}")
+        for v in recent_videos(cid, chan_cutoff):
+            v["source"] = f"yt:{seed.lstrip('@')[:30]}"
+            videos.append(v)
+
+    # dedup by video id (a trending clip may also sit on a curated channel),
+    # then cap the total that reaches Gemini — the real cost knob.
+    seen_vid, uniq = set(), []
+    for v in videos:
+        if v["id"] in seen_vid:
+            continue
+        seen_vid.add(v["id"])
+        uniq.append(v)
+    videos = uniq[:MAX_VIDEOS]
+
+    if not videos:
+        _log("no candidate videos (no trending results and no channels) — skip")
+        write([])
+        return
+
+    tips, seen = [], set()
+    for v in videos:
+        source = v.get("source") or "yt-trend"
+        for raw in analyze_video(v):
+            t = to_tip(raw, source, v["url"])
+            if not t:
+                continue
+            k = (t["home"].lower(), t["away"].lower(), t["market"], t["pick"], source)
+            if k in seen:
+                continue
+            seen.add(k)
+            tips.append(t)
+        _log(f"{source} {v['id']}: total tips so far {len(tips)}")
 
     write(tips)
-    print(f"youtube tips: {len(tips)} from {len(channels)} channel(s), "
-          f"{MAX_VIDEOS - budget} video(s) analyzed")
+    print(f"youtube tips: {len(tips)} from {len(videos)} video(s) "
+          f"({len(channels)} curated channel(s) + trending)")
 
 
 if __name__ == "__main__":

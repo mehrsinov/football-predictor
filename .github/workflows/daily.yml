@@ -48,11 +48,14 @@ jobs:
           AI_PROVIDER:      ${{ secrets.AI_PROVIDER }}
           AI_API_KEY:       ${{ secrets.AI_API_KEY }}
           AI_MODEL:         ${{ secrets.AI_MODEL }}
-          # لایه یوتیوب: کلید Gemini از secrets؛ فهرست کانال‌ها و مدل از vars
+          # لایه یوتیوب: کلید Gemini از secrets؛ فهرست کانال‌ها/ریجن‌ها و مدل از vars
           # (کانال‌ها حساس نیستند و بهتر است کامیت نشوند → GitHub Variables).
+          # منبع اصلی: ویدیوهای پرطرفدارِ ورزشی (mostPopular) در چند regionCode؛
+          # YT_CHANNELS فقط اختیاری و افزودنی است.
           YT_API_KEY:       ${{ secrets.YT_API_KEY }}
           GEMINI_API_KEY:   ${{ secrets.GEMINI_API_KEY }}
           YT_CHANNELS:      ${{ vars.YT_CHANNELS }}
+          YT_REGIONS:       ${{ vars.YT_REGIONS }}
           YT_MODEL:         ${{ vars.YT_MODEL }}
         run: |
           python run_daily.py ${{ secrets.TG_SESSION && '--with-telegram-personal' || '' }}
