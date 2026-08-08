@@ -52,7 +52,8 @@ jobs:
           # (کانال‌ها حساس نیستند و بهتر است کامیت نشوند → GitHub Variables).
           # منبع اصلی: ویدیوهای پرطرفدارِ ورزشی (mostPopular) در چند regionCode؛
           # YT_CHANNELS فقط اختیاری و افزودنی است.
-          YT_API_KEY:       ${{ secrets.YT_API_KEY }}
+          # نام مخزنِ سکرت می‌تواند YT_API_KEY یا YOUTUBE_API_KEY باشد؛ هر کدام موجود بود استفاده می‌شود.
+          YT_API_KEY:       ${{ secrets.YT_API_KEY || secrets.YOUTUBE_API_KEY }}
           GEMINI_API_KEY:   ${{ secrets.GEMINI_API_KEY }}
           YT_CHANNELS:      ${{ vars.YT_CHANNELS }}
           YT_REGIONS:       ${{ vars.YT_REGIONS }}
