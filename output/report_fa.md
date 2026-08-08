@@ -1,37 +1,30 @@
 # ⚽ گزارش تحلیل و پیش‌بینی فوتبال
 **شنبه 17 مرداد 1405** (2026-08-08)
 
-📊 284 گزینه تحلیل‌شده روی بازی‌های تحت پوشش مدل | 2405 تیپ جمع‌آوری‌شده از منابع خارجی (123 تیپ با بازی‌های مدل تطبیق داده شد)
+📊 270 گزینه تحلیل‌شده روی بازی‌های تحت پوشش مدل | 2336 تیپ جمع‌آوری‌شده از منابع خارجی (115 تیپ با بازی‌های مدل تطبیق داده شد)
 
-🔎 منابع امروز: سایت‌های پیش‌بینی (2405)
+🔎 منابع امروز: سایت‌های پیش‌بینی (2336)
 
 ## 🎯 پیشنهادهای برگزیده روز (با دلیل)
 
-**1. Lokomotiv Moscow — Akron Tolyatti**  (لیگ برتر روسیه، 18:30)
-   🎯 **برد میزبان** | احتمال: **56٪**
-   ◂ فرم Lokomotiv Moscow: 1 برد و 2 مساوی در ۵ بازی اخیر
-   ◂ برتری xG مدل: 1.9 در برابر 1.08
-   ◂ قدرت حمله Lokomotiv Moscow حدود +17٪ نسبت به میانگین لیگ
-   ◂ اجماع 2 منبع مستقل: statarea، vitibet
-
-**2. Palmeiras — Internacional**  (سری آ برزیل، 22:30)
+**1. Palmeiras — Internacional**  (سری آ برزیل، 22:30)
    🎯 **بالای ۱.۵ گل** | احتمال: **78٪**
    ◂ مجموع xG مدل 2.8 — بالاتر از خط 1.5
    ◂ میانگین گلِ بازی‌های اخیر دو تیم: 3.0 و 2.6
 
-**3. Cruzeiro — Mirassol**  (سری آ برزیل، 17:30)
+**2. Cruzeiro — Mirassol**  (سری آ برزیل، 17:30)
    🎯 **زیر ۳.۵ گل** | احتمال: **77٪**
    ◂ مجموع xG مدل فقط 2.5 — پایین‌تر از خط 3.5
    ◂ بازی‌های اخیر دو تیم کم‌گل بوده (میانگین 2.0 و 2.0)
 
-**4. Dynamo Moscow — Dynamo Makhachkala**  (لیگ برتر روسیه، 15:00)
+**3. Dynamo Moscow — Dynamo Makhachkala**  (لیگ برتر روسیه، 15:00)
    🎯 **بالای ۱.۵ گل** | احتمال: **75٪**
    ◂ مجموع xG مدل 2.6 — بالاتر از خط 1.5
    ◂ میانگین گلِ بازی‌های اخیر دو تیم: 2.2 و 2.2
 
 **🎲 دوبل برتر:** Palmeiras — Internacional (بالای ۱.۵ گل) + Cruzeiro — Mirassol (زیر ۳.۵ گل) | ضریب ترکیبی: **~1.68** | احتمال: 60٪
 
-**🎲 سه‌گانهٔ برتر:** Palmeiras — Internacional (بالای ۱.۵ گل) + Cruzeiro — Mirassol (زیر ۳.۵ گل) + Dynamo Moscow — Dynamo Makhachkala (بالای ۱.۵ گل) | ضریب ترکیبی: **~2.23** | احتمال: 45٪
+**🎲 سه‌گانهٔ برتر:** Palmeiras — Internacional (بالای ۱.۵ گل) + Cruzeiro — Mirassol (زیر ۳.۵ گل) + Dynamo Moscow — Dynamo Makhachkala (بالای ۱.۵ گل) | ضریب ترکیبی: **~2.25** | احتمال: 45٪
 
 _فقط گزینه‌های چندمنبعی یا با اطمینان بالای مدل؛ حداکثر یک پیک از هر بازی._
 
@@ -42,20 +35,20 @@ _فقط گزینه‌های چندمنبعی یا با اطمینان بالای
 ## 🤝 بیشترین اجماع تیپسترها
 
 1. Estrela — Sporting CP: **برد مهمان** (5 منبع: predictz، statarea، vitibet، windrawwin) | احتمال مدل: 32٪
-2. New England Revolution — Houston Dynamo FC: **برد میزبان** (3 منبع: predictz، tipsgg، windrawwin) | احتمال مدل: 49٪
-3. Lokomotiv Moscow — Akron Tolyatti: **برد میزبان** (2 منبع: statarea، vitibet) | احتمال مدل: 56٪
-4. Grêmio — São Paulo: **برد میزبان** (2 منبع: predictz، tipsgg) | احتمال مدل: 46٪
-5. Venados FC — Tapatio: **برد میزبان** (2 منبع: statarea، tipsgg) | احتمال مدل: 45٪
-6. Tijuana U19 — León U19: **برد میزبان** (2 منبع: betmines، vitibet) | احتمال مدل: 45٪
+2. Agropecuario — Club Atletico Guemes: **برد میزبان** (3 منبع: predictz، vitibet، windrawwin) | احتمال مدل: 40٪
+3. New England Revolution — Houston Dynamo FC: **برد میزبان** (2 منبع: predictz، windrawwin) | احتمال مدل: 49٪
+4. Tijuana U19 — León U19: **برد میزبان** (2 منبع: betmines، vitibet) | احتمال مدل: 45٪
+5. Estudiantes Buenos Aires — Dep. Madryn: **مساوی** (2 منبع: predictz، vitibet) | احتمال مدل: 31٪
+6. Atletico Rafaela — Chacarita Juniors: **مساوی** (2 منبع: predictz، vitibet) | احتمال مدل: 31٪
 
 ## 📡 تیپ‌های خارج از پوشش مدل (فقط اجماع منابع)
 
-- Leicester — Northampton: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 74٪)
-- Boreham Wood — Tamworth: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 66٪)
-- AFC Fylde — Wealdstone: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 62٪)
-- Burnley — Notts County: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 62٪)
-- Guimaraes — Arouca: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 53٪)
-- Hartlepool — Barrow: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 52٪)
+- Crvena Zvezda — Novi Pazar: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 82٪)
+- The Strongest — Independiente Petrolero: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 76٪)
+- Metta / LU — Rīgas FS II: **برد میزبان** (3 منبع | احتمال اعلامی منابع: 80٪)
+- Kauno Žalgiris — Hegelmann Litauen: **برد میزبان** (3 منبع | احتمال اعلامی منابع: 80٪)
+- jerv — Vidar: **برد میزبان** (3 منبع | احتمال اعلامی منابع: 72٪)
+- Ross County — Montrose: **برد میزبان** (3 منبع | احتمال اعلامی منابع: 70٪)
 
 ---
 ### 📏 شفافیت عملکرد (بک‌تست واقعی، بدون گلچین)
