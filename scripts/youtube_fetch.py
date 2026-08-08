@@ -56,10 +56,10 @@ MAX_CHANNELS = int(os.environ.get("YT_MAX_CHANNELS", "12") or 12)
 
 # trending (mostPopular) caps — the PRIMARY path
 SPORTS_CATEGORY = "17"  # YouTube's fixed "Sports" videoCategoryId
-DEFAULT_REGIONS = ["GB", "ES", "IT", "DE", "BR", "TR", "IR", "FR", "AR", "US"]
+DEFAULT_REGIONS = ["GB", "ES", "IT", "DE", "BR", "TR", "RU", "IR", "FR", "AR", "US"]
 POP_SINCE_HOURS = int(os.environ.get("YT_POP_SINCE_HOURS", "48") or 48)
 POP_PER_REGION = int(os.environ.get("YT_POP_PER_REGION", "3") or 3)
-MAX_REGIONS = int(os.environ.get("YT_MAX_REGIONS", "6") or 6)
+MAX_REGIONS = int(os.environ.get("YT_MAX_REGIONS", "7") or 7)
 MAX_DURATION_MIN = int(os.environ.get("YT_MAX_DURATION_MIN", "30") or 30)
 
 # overall cap on how many videos reach Gemini (cost guard, both paths combined)
