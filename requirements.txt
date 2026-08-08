@@ -8,3 +8,5 @@ jdatetime>=4.1
 curl_cffi>=0.6
 requests>=2.31
 telethon==1.36.0
+# YouTube layer (youtube_fetch.py): native video ingestion via the Gemini SDK.
+google-genai>=1.0

@@ -309,7 +309,16 @@ def main():
         step("harvest new sites (tips.gg, goalvertex)", "new_scrapers.py", timeout=420)
         step("harvest betmines (API)", "betmines_fetch.py", timeout=180)
         step("refresh injuries (transfermarkt)", "transfermarkt_injuries.py", timeout=300)
-        # Agent writes tips_youtube.json / tips_telegram.json before calling this.
+        # YouTube layer: Gemini watches curated channels and extracts ONLY
+        # explicitly-stated tips -> tips_youtube.json (merge_rank auto-loads it).
+        # The script self-skips (writes []) with no key or no channels, so we
+        # gate on a key here just to avoid spawning a pointless subprocess.
+        if (os.environ.get("YT_API_KEY") or os.environ.get("GEMINI_API_KEY")
+                or os.environ.get("GOOGLE_API_KEY") or os.environ.get("AI_API_KEY")):
+            step("youtube tips (Gemini video analysis)", "youtube_fetch.py", timeout=600)
+        # Telegram bot inbox: posts the user forwards to the delivery bot ->
+        # tips_tg_inbox.json. Needs TG_BOT_TOKEN in THIS step's env (the daily.yml
+        # pipeline step), not only in the later delivery step.
         if os.environ.get("TG_BOT_TOKEN"):
             step("telegram bot inbox (forwarded posts)", "tg_bot_inbox.py", timeout=90)
         if "--with-telegram-personal" in args:

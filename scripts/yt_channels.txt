@@ -1,0 +1,19 @@
+# YouTube channels for the prediction/analysis layer (youtube_fetch.py)
+# ---------------------------------------------------------------------
+# One channel per line. Anything after # is ignored. Blank file = layer
+# skips cleanly (no Gemini calls, no cost). Accepts any of:
+#     UCxxxxxxxxxxxxxxxxxxxxxx     (channel ID — most reliable, no lookup)
+#     @handle                      (e.g. @channelname — resolved via page)
+#     https://www.youtube.com/@handle   (full URL also fine)
+#
+# The env var YT_CHANNELS (comma-separated, same formats) OVERRIDES this file
+# when set — use it in CI (GitHub Secrets/vars) so the list isn't committed.
+#
+# Only add channels you TRUST for football tips. Gemini watches each recent
+# video and extracts ONLY explicitly-stated picks; it never invents a tip.
+# Caps (env-tunable): YT_MAX_CHANNELS, YT_MAX_PER_CHANNEL, YT_MAX_VIDEOS,
+# YT_SINCE_HOURS — keep them modest to control API spend.
+#
+# --- Add your channels below (uncomment / replace the examples) ---
+# @YourTrustedTipsChannel
+# UC0000000000000000000000

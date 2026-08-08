@@ -40,10 +40,20 @@ jobs:
           TG_API_ID:        ${{ secrets.TG_API_ID }}
           TG_API_HASH:      ${{ secrets.TG_API_HASH }}
           TG_SESSION:       ${{ secrets.TG_SESSION }}
+          # ربات تلگرام: خواندن تیپ‌های فوروارد‌شده باید در همین مرحله انجام شود.
+          # (tg_bot_inbox فقط وقتی اجرا می‌شود که TG_BOT_TOKEN در env همین مرحله باشد،
+          #  نه صرفاً در مرحلهٔ ارسال گزارش.)
+          TG_BOT_TOKEN:     ${{ secrets.TG_BOT_TOKEN }}
           # لایه هوش مصنوعی افزودنی (اختیاری): هر AI با API سازگار
           AI_PROVIDER:      ${{ secrets.AI_PROVIDER }}
           AI_API_KEY:       ${{ secrets.AI_API_KEY }}
           AI_MODEL:         ${{ secrets.AI_MODEL }}
+          # لایه یوتیوب: کلید Gemini از secrets؛ فهرست کانال‌ها و مدل از vars
+          # (کانال‌ها حساس نیستند و بهتر است کامیت نشوند → GitHub Variables).
+          YT_API_KEY:       ${{ secrets.YT_API_KEY }}
+          GEMINI_API_KEY:   ${{ secrets.GEMINI_API_KEY }}
+          YT_CHANNELS:      ${{ vars.YT_CHANNELS }}
+          YT_MODEL:         ${{ vars.YT_MODEL }}
         run: |
           python run_daily.py ${{ secrets.TG_SESSION && '--with-telegram-personal' || '' }}
 
