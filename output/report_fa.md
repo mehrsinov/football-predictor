@@ -1,23 +1,13 @@
 # ⚽ گزارش تحلیل و پیش‌بینی فوتبال
-**جمعه 10 مهر 1405** (2026-10-02)
+**شنبه 11 مهر 1405** (2026-10-03)
 
-📊 255 گزینه تحلیل‌شده روی بازی‌های تحت پوشش مدل | 1874 تیپ جمع‌آوری‌شده از منابع خارجی (91 تیپ با بازی‌های مدل تطبیق داده شد)
+📊 524 گزینه تحلیل‌شده روی بازی‌های تحت پوشش مدل | 3594 تیپ جمع‌آوری‌شده از منابع خارجی (247 تیپ با بازی‌های مدل تطبیق داده شد)
 
-🔎 منابع امروز: سایت‌های پیش‌بینی (1874)
+🔎 منابع امروز: سایت‌های پیش‌بینی (3594)
 
 ## 🎯 پیشنهادهای برگزیده روز (با دلیل)
 
-**1. Defensores Cambaceres — Victoriano Arenas**  (لیگ حرفه‌ای آرژانتین، 01:00)
-   🎯 **زیر ۲.۵ گل** | احتمال: **63٪**
-   ◂ مجموع xG مدل فقط 2.2 — پایین‌تر از خط 2.5
-   ◂ اجماع 2 منبع مستقل: betmines، goalvertex
-
-**2. Guadalajara U21 — Juárez U21**  (لیگا MX مکزیک، 18:30)
-   🎯 **هر دو تیم گل می‌زنند** | احتمال: **57٪**
-   ◂ هر دو تیم xG قابل‌توجه دارند (1.56 و 1.25)
-   ◂ اجماع 2 منبع مستقل: betmines، goalvertex
-
-**3. Walsall — Crawley Town**  (England League Two، 17:30)
+**1. Walsall — Crawley Town**  (England League Two، 17:30)
    🎯 **زیر ۳.۵ گل** | احتمال: **76٪**
    ◂ مجموع xG مدل فقط 2.5 — پایین‌تر از خط 3.5
    ◂ بازی‌های اخیر دو تیم کم‌گل بوده (میانگین 1.6 و 3.0)
@@ -30,21 +20,21 @@ _فقط گزینه‌های چندمنبعی یا با اطمینان بالای
 
 ## 🤝 بیشترین اجماع تیپسترها
 
-1. Bayer Leverkusen (W) — Werder Bremen (W): **برد میزبان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 44٪
-2. Guadalajara U21 — Juárez U21: **برد مهمان** (3 منبع: goalvertex، statarea، zulubet) | احتمال مدل: 30٪
-3. Guadalajara U21 — Juárez U21: **شانس دوبل 12 (مساوی نمی‌شود)** (2 منبع: betmines، goalvertex) | احتمال مدل: 74٪
-4. Defensores Cambaceres — Victoriano Arenas: **زیر ۲.۵ گل** (2 منبع: betmines، goalvertex) | احتمال مدل: 63٪
-5. Guadalajara U21 — Juárez U21: **هر دو تیم گل می‌زنند** (2 منبع: betmines، goalvertex) | احتمال مدل: 57٪
-6. Guadalajara U21 — Juárez U21: **شانس دوبل X2 (مهمان نمی‌بازد)** (2 منبع: betmines، zulubet) | احتمال مدل: 56٪
+1. Alcorcon — Juventud Torremolinos: **برد میزبان** (3 منبع: betmines، goalvertex، statarea) | احتمال مدل: 45٪
+2. FC Köln (W) — SC Freiburg (W): **برد میزبان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 44٪
+3. Eintracht Frankfurt (W) — Bayern München (W): **برد مهمان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 32٪
+4. Liniers — Excursionistas: **برد مهمان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 29٪
+5. Sant Andreu — Antequera CF: **شانس دوبل 12 (مساوی نمی‌شود)** (2 منبع: betmines، goalvertex) | احتمال مدل: 74٪
+6. Camioneros — Deportivo Laferrere: **شانس دوبل 12 (مساوی نمی‌شود)** (2 منبع: goalvertex، zulubet) | احتمال مدل: 69٪
 
 ## 📡 تیپ‌های خارج از پوشش مدل (فقط اجماع منابع)
 
-- Bray Wanderers — Cobh Ramblers: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 71٪)
-- France — Italy: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 69٪)
-- Seattle Sounders — Sporting Kansas City: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 66٪)
-- Helmond Sport — Heracles: **برد مهمان** (3 منبع | احتمال اعلامی منابع: 77٪)
-- Kazakhstan — Moldova: **برد میزبان** (3 منبع | احتمال اعلامی منابع: 76٪)
-- Belgium — Türkiye: **برد میزبان** (3 منبع | احتمال اعلامی منابع: 72٪)
+- Switzerland — Slovenia: **برد میزبان** (5 منبع | احتمال اعلامی منابع: 70٪)
+- Cuiaba — Ponte Preta: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 81٪)
+- Stromsgodset — Asane: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 74٪)
+- The New Saints — Cambrian & Clydach: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 68٪)
+- Caernarfon Town — Barry Town: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 67٪)
+- Croatia — England: **برد مهمان** (4 منبع | احتمال اعلامی منابع: 65٪)
 
 ---
 ### 📏 شفافیت عملکرد (بک‌تست واقعی، بدون گلچین)
