@@ -1,16 +1,16 @@
 # ⚽ گزارش تحلیل و پیش‌بینی فوتبال
-**شنبه 11 مهر 1405** (2026-10-03)
+**یکشنبه 12 مهر 1405** (2026-10-04)
 
-📊 524 گزینه تحلیل‌شده روی بازی‌های تحت پوشش مدل | 3594 تیپ جمع‌آوری‌شده از منابع خارجی (247 تیپ با بازی‌های مدل تطبیق داده شد)
+📊 270 گزینه تحلیل‌شده روی بازی‌های تحت پوشش مدل | 2145 تیپ جمع‌آوری‌شده از منابع خارجی (220 تیپ با بازی‌های مدل تطبیق داده شد)
 
-🔎 منابع امروز: سایت‌های پیش‌بینی (3594)
+🔎 منابع امروز: سایت‌های پیش‌بینی (2145)
 
 ## 🎯 پیشنهادهای برگزیده روز (با دلیل)
 
-**1. Walsall — Crawley Town**  (England League Two، 17:30)
-   🎯 **زیر ۳.۵ گل** | احتمال: **76٪**
-   ◂ مجموع xG مدل فقط 2.5 — پایین‌تر از خط 3.5
-   ◂ بازی‌های اخیر دو تیم کم‌گل بوده (میانگین 1.6 و 3.0)
+**1. PEC Zwolle (W) — SC Heerenveen (W)**  (اردیویسه هلند، 18:15)
+   🎯 **بالای ۲.۵ گل** | احتمال: **56٪**
+   ◂ مجموع xG مدل 2.9 — بالاتر از خط 2.5
+   ◂ اجماع 2 منبع مستقل: betmines، goalvertex
 
 _فقط گزینه‌های چندمنبعی یا با اطمینان بالای مدل؛ حداکثر یک پیک از هر بازی._
 
@@ -20,21 +20,21 @@ _فقط گزینه‌های چندمنبعی یا با اطمینان بالای
 
 ## 🤝 بیشترین اجماع تیپسترها
 
-1. Alcorcon — Juventud Torremolinos: **برد میزبان** (3 منبع: betmines، goalvertex، statarea) | احتمال مدل: 45٪
-2. FC Köln (W) — SC Freiburg (W): **برد میزبان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 44٪
-3. Eintracht Frankfurt (W) — Bayern München (W): **برد مهمان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 32٪
-4. Liniers — Excursionistas: **برد مهمان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 29٪
-5. Sant Andreu — Antequera CF: **شانس دوبل 12 (مساوی نمی‌شود)** (2 منبع: betmines، goalvertex) | احتمال مدل: 74٪
-6. Camioneros — Deportivo Laferrere: **شانس دوبل 12 (مساوی نمی‌شود)** (2 منبع: goalvertex، zulubet) | احتمال مدل: 69٪
+1. Godoy Cruz — Los Andes: **برد میزبان** (5 منبع: goalvertex، predictz، statarea، vitibet) | احتمال مدل: 39٪
+2. San Martin — Almagro: **برد میزبان** (5 منبع: goalvertex، predictz، statarea، vitibet) | احتمال مدل: 39٪
+3. Real Zaragoza — CD Teruel: **برد میزبان** (4 منبع: betmines، goalvertex، statarea، zulubet) | احتمال مدل: 45٪
+4. Wolfsburg (W) — Hamburger SV (W): **برد میزبان** (4 منبع: betmines، goalvertex، statarea، vitibet) | احتمال مدل: 44٪
+5. Argentinos Juniors — Tigre: **برد میزبان** (4 منبع: goalvertex، predictz، statarea، windrawwin) | احتمال مدل: 32٪
+6. Leones Negros — Dorados de Sinaloa: **برد میزبان** (3 منبع: goalvertex، statarea، windrawwin) | احتمال مدل: 44٪
 
 ## 📡 تیپ‌های خارج از پوشش مدل (فقط اجماع منابع)
 
-- Switzerland — Slovenia: **برد میزبان** (5 منبع | احتمال اعلامی منابع: 70٪)
-- Cuiaba — Ponte Preta: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 81٪)
-- Stromsgodset — Asane: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 74٪)
-- The New Saints — Cambrian & Clydach: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 68٪)
-- Caernarfon Town — Barry Town: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 67٪)
-- Croatia — England: **برد مهمان** (4 منبع | احتمال اعلامی منابع: 65٪)
+- Netherlands — Serbia: **برد میزبان** (6 منبع | احتمال اعلامی منابع: 81٪)
+- Huracan — Aldosivi: **برد میزبان** (6 منبع | احتمال اعلامی منابع: 65٪)
+- Audace Cerignola — Team Altamura: **برد میزبان** (5 منبع | احتمال اعلامی منابع: 66٪)
+- Pianese — Ravenna: **برد مهمان** (5 منبع | احتمال اعلامی منابع: 62٪)
+- Rivers United — Ikorodu City: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 80٪)
+- West Ham W — Chelsea W: **برد مهمان** (4 منبع | احتمال اعلامی منابع: 74٪)
 
 ---
 ### 📏 شفافیت عملکرد (بک‌تست واقعی، بدون گلچین)
