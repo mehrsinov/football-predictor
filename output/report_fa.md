@@ -1,37 +1,36 @@
 # ⚽ گزارش تحلیل و پیش‌بینی فوتبال
-**شنبه 9 آبان 1405** (2026-10-31)
+**یکشنبه 10 آبان 1405** (2026-11-01)
 
-📊 613 گزینه تحلیل‌شده روی بازی‌های تحت پوشش مدل | 4945 تیپ جمع‌آوری‌شده از منابع خارجی (320 تیپ با بازی‌های مدل تطبیق داده شد)
+📊 352 گزینه تحلیل‌شده روی بازی‌های تحت پوشش مدل | 3359 تیپ جمع‌آوری‌شده از منابع خارجی (238 تیپ با بازی‌های مدل تطبیق داده شد)
 
-🔎 منابع امروز: سایت‌های پیش‌بینی (4945)
+🔎 منابع امروز: سایت‌های پیش‌بینی (3359)
 
 ## 🎯 پیشنهادهای برگزیده روز (با دلیل)
 
-**1. Rodina Moscow — Krasnodar**  (لیگ برتر روسیه، 20:15)
-   🎯 **برد مهمان** | احتمال: **58٪**
-   ◂ فرم Krasnodar: 4 برد و 0 مساوی در ۵ بازی اخیر
-   ◂ برتری xG مدل: 1.94 در برابر 1.02
-   ◂ قدرت حمله Krasnodar حدود +45٪ نسبت به میانگین لیگ
-   ◂ اجماع 2 منبع مستقل: goalvertex، vitibet
+**1. Vancouver Whitecaps — Seattle Sounders FC**  (MLS آمریکا، 00:00)
+   🎯 **برد میزبان** | احتمال: **66٪**
+   ◂ فرم Vancouver Whitecaps: 2 برد و 2 مساوی در ۵ بازی اخیر
+   ◂ برتری xG مدل: 2.29 در برابر 1.0
+   ◂ قدرت حمله Vancouver Whitecaps حدود +20٪ نسبت به میانگین لیگ
+   ◂ اجماع 4 منبع مستقل: goalvertex، statarea، vitibet، windrawwin
 
-**2. Dynamo Moscow — Akhmat Grozny**  (لیگ برتر روسیه، 18:00)
+**2. Nashville SC — Red Bull New York**  (MLS آمریکا، 01:00)
+   🎯 **برد میزبان** | احتمال: **68٪**
+   ◂ فرم Nashville SC: 3 برد و 2 مساوی در ۵ بازی اخیر
+   ◂ برتری xG مدل: 2.2 در برابر 0.82
+   ◂ قدرت حمله Nashville SC حدود +15٪ نسبت به میانگین لیگ
+   ◂ اجماع 3 منبع مستقل: goalvertex، vitibet، windrawwin
+
+**3. Panionios — Panserraikos**  (سوپرلیگ یونان، 16:15)
    🎯 **برد میزبان** | احتمال: **53٪**
-   ◂ فرم Dynamo Moscow: 2 برد و 2 مساوی در ۵ بازی اخیر
-   ◂ برتری xG مدل: 1.77 در برابر 1.07
-   ◂ قدرت حمله Dynamo Moscow حدود +23٪ نسبت به میانگین لیگ
-   ◂ در دیدارهای رودررو، Dynamo Moscow میزبانِ برتر بوده (2 برد خانگی اخیر)
-
-**3. Pachuca — Tigres UANL**  (لیگا MX مکزیک، 02:30)
-   🎯 **زیر ۳.۵ گل** | احتمال: **77٪**
-   ◂ مجموع xG مدل فقط 2.5 — پایین‌تر از خط 3.5
-   ◂ بازی‌های اخیر دو تیم کم‌گل بوده (میانگین 3.2 و 2.4)
+   ◂ برتری xG مدل: 1.74 در برابر 0.96
+   ◂ Panserraikos در ۵ بازی اخیر 3 باخت داشته
+   ◂ اجماع 2 منبع مستقل: statarea، tipsgg
 
 **4. Lokomotiv Moscow — Spartak Moscow**  (لیگ برتر روسیه، 20:15)
    🎯 **هر دو تیم گل می‌زنند** | احتمال: **62٪**
    ◂ هر دو تیم xG قابل‌توجه دارند (1.56 و 1.5)
    ◂ در 5 رودرروی اخیر، 5 بار هر دو گل زدند
-
-**🎲 دوبل برتر:** Pachuca — Tigres UANL (زیر ۳.۵ گل) + Lokomotiv Moscow — Spartak Moscow (هر دو تیم گل می‌زنند) | ضریب ترکیبی: **~2.11** | احتمال: 48٪
 
 _فقط گزینه‌های چندمنبعی یا با اطمینان بالای مدل؛ حداکثر یک پیک از هر بازی._
 
@@ -41,21 +40,21 @@ _فقط گزینه‌های چندمنبعی یا با اطمینان بالای
 
 ## 🤝 بیشترین اجماع تیپسترها
 
-1. FC Porto — Estoril: **برد میزبان** (4 منبع: betmines، goalvertex، vitibet، windrawwin) | احتمال مدل: 40٪
-2. LA Galaxy — Austin FC: **برد میزبان** (3 منبع: goalvertex، vitibet، windrawwin) | احتمال مدل: 47٪
-3. Vélez Sarsfield — San Lorenzo: **برد میزبان** (3 منبع: goalvertex، vitibet، windrawwin) | احتمال مدل: 34٪
-4. Atletico Clube Portugal — UD Santarem: **شانس دوبل 12 (مساوی نمی‌شود)** (2 منبع: betmines، goalvertex) | احتمال مدل: 76٪
-5. Rodina Moscow — Krasnodar: **برد مهمان** (2 منبع: goalvertex، vitibet) | احتمال مدل: 58٪
-6. Dynamo Moscow — Akhmat Grozny: **برد میزبان** (2 منبع: goalvertex، vitibet) | احتمال مدل: 53٪
+1. Istanbul Basaksehir — Samsunspor: **برد میزبان** (5 منبع: goalvertex، statarea، tipsgg، vitibet) | احتمال مدل: 41٪
+2. Vancouver Whitecaps — Seattle Sounders FC: **برد میزبان** (4 منبع: goalvertex، statarea، vitibet، windrawwin) | احتمال مدل: 66٪
+3. Santos — Necaxa: **برد میزبان** (4 منبع: goalvertex، statarea، tipsgg، windrawwin) | احتمال مدل: 46٪
+4. Braga — FC Famalicao: **برد میزبان** (4 منبع: goalvertex، statarea، tipsgg، zulubet) | احتمال مدل: 40٪
+5. Tondela — Felgueiras 1932: **برد میزبان** (4 منبع: goalvertex، statarea، tipsgg، vitibet) | احتمال مدل: 36٪
+6. Nashville SC — Red Bull New York: **برد میزبان** (3 منبع: goalvertex، vitibet، windrawwin) | احتمال مدل: 68٪
 
 ## 📡 تیپ‌های خارج از پوشش مدل (فقط اجماع منابع)
 
-- Boreham Wood — Hartlepool: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 78٪)
-- Levante — Atletico Madrid: **برد مهمان** (4 منبع | احتمال اعلامی منابع: 75٪)
-- Barcelona — Alaves: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 68٪)
-- CSKA Sofia — Slavia Sofia: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 67٪)
-- Peterborough — Luton: **برد مهمان** (3 منبع | احتمال اعلامی منابع: 80٪)
-- Wigan — Bromley: **برد میزبان** (3 منبع | احتمال اعلامی منابع: 80٪)
+- Lazio — Cagliari: **برد میزبان** (6 منبع | احتمال اعلامی منابع: 75٪)
+- Racing Santander — Real Madrid: **برد مهمان** (6 منبع | احتمال اعلامی منابع: 65٪)
+- Arsenal W — Aston Villa W: **برد میزبان** (5 منبع | احتمال اعلامی منابع: 76٪)
+- Falkirk — Celtic: **برد مهمان** (5 منبع | احتمال اعلامی منابع: 68٪)
+- Ravenna — Pineto: **برد میزبان** (5 منبع | احتمال اعلامی منابع: 65٪)
+- Arouca — Nacional: **برد میزبان** (5 منبع | احتمال اعلامی منابع: 65٪)
 
 ---
 ### 📏 شفافیت عملکرد (بک‌تست واقعی، بدون گلچین)
