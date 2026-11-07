@@ -1,24 +1,71 @@
 # ⚽ گزارش تحلیل و پیش‌بینی فوتبال
-**جمعه 15 آبان 1405** (2026-11-06)
+**شنبه 16 آبان 1405** (2026-11-07)
 
-📊 309 گزینه تحلیل‌شده روی بازی‌های تحت پوشش مدل | 2692 تیپ جمع‌آوری‌شده از منابع خارجی (179 تیپ با بازی‌های مدل تطبیق داده شد)
+📊 548 گزینه تحلیل‌شده روی بازی‌های تحت پوشش مدل | 4931 تیپ جمع‌آوری‌شده از منابع خارجی (270 تیپ با بازی‌های مدل تطبیق داده شد)
 
-🔎 منابع امروز: سایت‌های پیش‌بینی (2692)
+🔎 منابع امروز: سایت‌های پیش‌بینی (4931)
 
 ## 🎯 پیشنهادهای برگزیده روز (با دلیل)
 
-**1. Lokomotiv Moscow — Rubin Kazan**  (لیگ برتر روسیه، 20:00)
-   🎯 **مساوی نمی‌شود** | احتمال: **72٪**
-   ◂ فرم Rubin Kazan: 2 برد و 1 مساوی در ۵ بازی اخیر
-   ◂ قدرت حمله Rubin Kazan حدود -11٪ نسبت به میانگین لیگ
-   ◂ اجماع 2 منبع مستقل: goalvertex، zulubet
+**1. Galatasaray — Amed SFK**  (سوپرلیگ ترکیه، 19:30)
+   🎯 **برد میزبان** | احتمال: **77٪**
+   ◂ فرم Galatasaray: 4 برد و 0 مساوی در ۵ بازی اخیر
+   ◂ برتری xG مدل: 2.76 در برابر 0.82
+   ◂ قدرت حمله Galatasaray حدود +59٪ نسبت به میانگین لیگ
+   ◂ اجماع 4 منبع مستقل: betmines، goalvertex، vitibet، zulubet
 
-**2. Granada — Tenerife**  (سگوندا اسپانیا، 23:30)
+**2. Philadelphia Union — Toronto FC**  (MLS آمریکا، 00:30)
+   🎯 **برد میزبان** | احتمال: **62٪**
+   ◂ فرم Philadelphia Union: 1 برد و 2 مساوی در ۵ بازی اخیر
+   ◂ برتری xG مدل: 2.29 در برابر 1.18
+   ◂ قدرت حمله Philadelphia Union حدود +19٪ نسبت به میانگین لیگ
+   ◂ اجماع 3 منبع مستقل: goalvertex، statarea، vitibet
+
+**3. FCSB — Hunedoara**  (سوپرلیگا رومانی، 22:00)
+   🎯 **برد میزبان** | احتمال: **60٪**
+   ◂ فرم FCSB: 3 برد و 0 مساوی در ۵ بازی اخیر
+   ◂ برتری xG مدل: 1.99 در برابر 1.02
+   ◂ قدرت حمله FCSB حدود +17٪ نسبت به میانگین لیگ
+   ◂ اجماع 3 منبع مستقل: goalvertex، statarea، vitibet
+
+**4. Rosario Central — Estudiantes de Río Cuarto**  (لیگ حرفه‌ای آرژانتین، 00:00)
+   🎯 **برد میزبان** | احتمال: **56٪**
+   ◂ فرم Rosario Central: 4 برد و 1 مساوی در ۵ بازی اخیر
+   ◂ برتری xG مدل: 1.57 در برابر 0.74
+   ◂ قدرت حمله Rosario Central حدود +28٪ نسبت به میانگین لیگ
+   ◂ اجماع 3 منبع مستقل: betmines، goalvertex، vitibet
+
+**5. Atlas — Pachuca**  (لیگا MX مکزیک، 02:30)
+   🎯 **مساوی نمی‌شود** | احتمال: **73٪**
+   ◂ فرم Pachuca: 2 برد و 1 مساوی در ۵ بازی اخیر
+   ◂ اجماع 2 منبع مستقل: betmines، goalvertex
+
+**6. Boca Juniors — Defensa y Justicia**  (لیگ حرفه‌ای آرژانتین، 00:00)
+   🎯 **زیر ۳.۵ گل** | احتمال: **76٪**
+   ◂ مجموع xG مدل فقط 2.5 — پایین‌تر از خط 3.5
+   ◂ بازی‌های اخیر دو تیم کم‌گل بوده (میانگین 2.4 و 2.2)
+
+**7. Granada — Tenerife**  (سگوندا اسپانیا، 23:30)
    🎯 **زیر ۳.۵ گل** | احتمال: **74٪**
    ◂ مجموع xG مدل فقط 2.6 — پایین‌تر از خط 3.5
    ◂ بازی‌های اخیر دو تیم کم‌گل بوده (میانگین 2.6 و 2.6)
 
-**🎲 دوبل برتر:** Lokomotiv Moscow — Rubin Kazan (مساوی نمی‌شود) + Granada — Tenerife (زیر ۳.۵ گل) | ضریب ترکیبی: **~1.88** | احتمال: 53٪
+**8. Mainz — Stuttgart**  (بوندسلیگا آلمان، 18:30)
+   🎯 **بالای ۲.۵ گل** | احتمال: **71٪**
+   ◂ مجموع xG مدل 3.7 — بالاتر از خط 2.5
+   ◂ میانگین گلِ بازی‌های اخیر دو تیم: 5.0 و 3.0
+   ◂ در 4 رودرروی اخیر، 3 بازی بالای ۲.۵ گل بوده
+
+**9. FC Cincinnati — Nashville SC**  (MLS آمریکا، 00:30)
+   🎯 **هر دو تیم گل می‌زنند** | احتمال: **64٪**
+   ◂ هر دو تیم xG قابل‌توجه دارند (1.33 و 1.94)
+   ◂ در 5 رودرروی اخیر، 3 بار هر دو گل زدند
+
+**🎲 دوبل برتر:** Philadelphia Union — Toronto FC (برد میزبان) + Atlas — Pachuca (مساوی نمی‌شود) | ضریب ترکیبی: **~2.22** | احتمال: 45٪
+
+**🎲 سه‌گانهٔ برتر:** Philadelphia Union — Toronto FC (برد میزبان) + Atlas — Pachuca (مساوی نمی‌شود) + Boca Juniors — Defensa y Justicia (زیر ۳.۵ گل) | ضریب ترکیبی: **~2.93** | احتمال: 34٪
+
+**🎲 چهارگانهٔ برتر:** Philadelphia Union — Toronto FC (برد میزبان) + Atlas — Pachuca (مساوی نمی‌شود) + Boca Juniors — Defensa y Justicia (زیر ۳.۵ گل) + Granada — Tenerife (زیر ۳.۵ گل) | ضریب ترکیبی: **~3.98** | احتمال: 25٪
 
 _فقط گزینه‌های چندمنبعی یا با اطمینان بالای مدل؛ حداکثر یک پیک از هر بازی._
 
@@ -28,21 +75,21 @@ _فقط گزینه‌های چندمنبعی یا با اطمینان بالای
 
 ## 🤝 بیشترین اجماع تیپسترها
 
-1. Bayern München (W) — Werder Bremen (W): **برد میزبان** (4 منبع: betmines، goalvertex، vitibet، zulubet) | احتمال مدل: 44٪
-2. Independiente — Deportivo Riestra: **برد میزبان** (3 منبع: goalvertex، vitibet، windrawwin) | احتمال مدل: 44٪
-3. Djurgårdens (W) — Hacken (W): **برد مهمان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 34٪
-4. Eintracht Frankfurt (W) — Wolfsburg (W): **برد مهمان** (3 منبع: goalvertex، vitibet، zulubet) | احتمال مدل: 31٪
-5. Atlético San Luis U21 — Juárez U21: **برد مهمان** (3 منبع: goalvertex، vitibet، zulubet) | احتمال مدل: 31٪
-6. AVS — Vizela: **شانس دوبل 12 (مساوی نمی‌شود)** (2 منبع: goalvertex، zulubet) | احتمال مدل: 76٪
+1. Galatasaray — Amed SFK: **برد میزبان** (4 منبع: betmines، goalvertex، vitibet، zulubet) | احتمال مدل: 77٪
+2. Sporting CP — Moreirense: **برد میزبان** (4 منبع: betmines، goalvertex، statarea، vitibet) | احتمال مدل: 38٪
+3. Philadelphia Union — Toronto FC: **برد میزبان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 62٪
+4. FCSB — Hunedoara: **برد میزبان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 60٪
+5. Rosario Central — Estudiantes de Río Cuarto: **برد میزبان** (3 منبع: betmines، goalvertex، vitibet) | احتمال مدل: 56٪
+6. CF Montréal — Vancouver Whitecaps: **برد مهمان** (3 منبع: goalvertex، statarea، vitibet) | احتمال مدل: 54٪
 
 ## 📡 تیپ‌های خارج از پوشش مدل (فقط اجماع منابع)
 
-- Llandudno — The New Saints: **برد مهمان** (5 منبع | احتمال اعلامی منابع: 67٪)
-- Everton — Coventry: **برد میزبان** (5 منبع | احتمال اعلامی منابع: 66٪)
-- Parndorf — Wienerberg: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 70٪)
-- AEK Larnaca — Karmiotissa: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 70٪)
-- Tikves — Skopje: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 69٪)
-- Maccabi Tel Aviv — Maccabi Petah Tikva: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 67٪)
+- Arsenal — Hull City: **برد میزبان** (5 منبع | احتمال اعلامی منابع: 78٪)
+- Paris Saint Germain — Estac Troyes: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 80٪)
+- Manchester City W — West Ham W: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 79٪)
+- Chelsea W — Everton W: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 77٪)
+- Rosenborg — Start: **برد میزبان** (4 منبع | احتمال اعلامی منابع: 77٪)
+- Valencia — Real Madrid: **برد مهمان** (4 منبع | احتمال اعلامی منابع: 77٪)
 
 ---
 ### 📏 شفافیت عملکرد (بک‌تست واقعی، بدون گلچین)
